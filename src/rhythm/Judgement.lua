@@ -6,23 +6,24 @@ Judgement.path = "assets/images/judgements/%s.png"
 Judgement.textSize = 30
 Judgement.judgements = {
 	{
-		time = 0.04,
+		time = 46,
 		name = "Sick!!",
 		score = 350,
 		image = "sick"
 	},
 	{
-		time = 0.12,
+		time = 79,
 		name = "Good.",
 		score = 200,
 		image = "good"
 	},
 	{
-		time = 0.17,
+		time = 109,
 		name = "Bad...",
 		score = 50,
 		image = "bad"
 	}
+	-- 133 for shit
 }
 
 function Judgement:getJudgement(time)
@@ -80,7 +81,7 @@ function Judgement:setJudgement(time)
 	local judgement = self:getJudgement(time)
 
 	self.sprite:loadTexture(self.path:format(judgement.image))
-	self.text:setContents(("%0.2f ms"):format(time*100))
+	self.text:setContents(("%0.2f ms"):format(time))
 	self.text:setY(self.sprite:getHeight()/2 + self.textSize/2)
 end
 

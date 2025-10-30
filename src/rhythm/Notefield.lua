@@ -1,6 +1,6 @@
 local Notefield = Group:extend("Notefield")
-Notefield.range = 0.3
-Notefield.missRange = 0.5
+Notefield.range = 133
+Notefield.missRange = 170
 
 Notefield.rotations = {
 	math.rad(-90),
@@ -394,7 +394,7 @@ function Notefield:getNoteTiming(meta)
 end
 
 function Notefield:getNoteMillisecondTiming(meta)
-	return self._song:stepToTime(self:getNoteTiming(meta))
+	return self._song:stepToTime(self:getNoteTiming(meta)) * 1000
 end
 
 function Notefield:removeNoteFromChart(r, step, killRender)

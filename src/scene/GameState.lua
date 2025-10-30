@@ -137,6 +137,12 @@ function GameState:constructor(...)
 		+ self.playerField:getHeight()
 		+ Receptor.size*self.playerField:getScale())
 
+	if Settings.getValue("Downscroll") then
+		self.judgementGroup:setY(self.playerField:getY()
+			- self.playerField:getHeight()
+			- Receptor.size*self.playerField:getScale())
+	end
+
 	self.playerField:setHitCallback(function(_, timing)
 		local judgement = self.judgementGroup:recycle(Judgement, nil, true)
 
