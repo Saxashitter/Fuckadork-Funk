@@ -285,7 +285,7 @@ function Notefield:hitNote(r, noteStep)
 	local timing = self:getNoteMillisecondTiming(noteData)
 
 	if noteData.holdTime > 0 then
-		timing = timing + ((noteData.holdTime / 1000) * self._song:getStepCrotchet())
+		timing = timing + self._song:stepToTime(noteData.holdTime) * 1000
 	end
 
 	if self._renderedSteps[r][noteStep] then
@@ -335,7 +335,7 @@ function Notefield:manageChartStep(r, step)
 	if self._heldNotes[r]
 	and step == self._heldNotes[r].step then
 		held = true
-		timing = timing + ((noteData.holdTime / 1000) * self._song:getStepCrotchet())
+		timing = timing + self._song:stepToTime(noteData.holdTime) * 1000
 	end
 
 	if self._bot
