@@ -44,6 +44,8 @@ end
 function SplashScene:init()
     MouseCursor.setVisibility(false)
 
+	SplashScene.super.init(self)
+
     self.bg = Sprite:new() --- @type chip.graphics.Sprite
     self.bg:makeSolid(Engine.gameWidth, Engine.gameHeight, 0xFF17171a)
     self.bg:screenCenter("xy")
@@ -55,7 +57,7 @@ function SplashScene:init()
     self.backdrop.velocity:set(-60, -60)
     self.backdrop:setAntialiasing(true)
     self.backdrop:setAlpha(0.05)
-    self.backdrop:kill()
+    --self.backdrop:kill()
     self:add(self.backdrop)
 
     self.strips = Sprite:new() --- @type chip.graphics.Sprite
@@ -78,6 +80,7 @@ function SplashScene:init()
     self.heart:screenCenter("xy")
     self.heart:setAntialiasing(true)
     self.heart:setVisibility(false)
+    self.heart.origin = Point:new(0.5, 0.5)
     self.heart.offset.y = -5
     self:add(self.heart)
 
@@ -89,6 +92,7 @@ function SplashScene:init()
     self.madeWith:setY(self.madeWith:getY() + 130)
     self.madeWith:setAntialiasing(true)
     self.madeWith:setVisibility(false)
+    self.madeWith.origin = Point:new(0.5, 0.5)
     self:add(self.madeWith)
 
     self.logo = Sprite:new() --- @type chip.graphics.Sprite
@@ -98,122 +102,8 @@ function SplashScene:init()
     self.logo:setY(self.logo:getY() + 170)
     self.logo:setAntialiasing(true)
     self.logo:setVisibility(false)
+    self.logo.origin = Point:new(0.5, 0.5)
     self:add(self.logo)
-
-    local t = Timer:new() --- @type chip.utils.Timer
-    t:start(0.25, function(_)
-        local t2 = Tween:new() --- @type chip.tweens.Tween
-        t2:tweenProperty(self.strips.scale, "x", (Engine.gameWidth / self.strips:getFrameWidth()) * 1.25, 0.7, Ease.cubeOut)
-        
-        local t4 = Tween:new() --- @type chip.tweens.Tween
-        t4:tweenProperty(self.strips, "rotation", math.rad(90), 0.7, Ease.cubeIn)
-        t4:setCompletionCallback(function(_)
-            self.strips:setVisibility(false)
-            self.logoBG:setVisibility(true)
-
-            self.backdrop:revive()
-
-            local t5 = Tween:new() --- @type chip.tweens.Tween
-            local pt = t5:tweenProperty(self.logoBG, "scale", Point:new(0.5, 0.5), 0.7, Ease.cubeIn)
-            pt:setCompletionCallback(function(_)
-                local t6 = Tween:new() --- @type chip.tweens.Tween
-                t6:tweenProperty(self.logoBG, "scale", Point:new(0.3, 0.3), 0.7, Ease.backOut)
-                
-                self.heart:setVisibility(true)
-                self.heart.scale:set(0.1, 0.6)
-
-                t6:tweenProperty(self.heart, "scale", Point:new(0.3, 0.3), 0.5, Ease.backOut)
-                
-                self.heart:setAlpha(0.001)
-                t6:tweenProperty(self.heart, "alpha", 1, 0.15, Ease.cubeOut)
-                
-                local t = Timer:new() --- @type chip.utils.Timer
-                t:start(0.25, function(_)
-                    self.madeWith:setVisibility(true)
-                    self.madeWith.scale:set(0.1, 1.5)
-
-                    self.madeWith:setAlpha(0.001)
-                    t6:tweenProperty(self.madeWith, "alpha", 1, 0.15, Ease.cubeOut)
-                    t6:tweenProperty(self.madeWith, "scale", Point:new(1, 1), 0.5, Ease.backOut)
-
-                    local t = Timer:new() --- @type chip.utils.Timer
-                    t:start(0.25, function(_)
-                        self.logo:setVisibility(true)
-                        self.logo.scale:set(0.1, 0.6)
-
-                        local t7 = Tween:new() --- @type chip.tweens.Tween
-                        t7:tweenProperty(self.logo, "scale", Point:new(0.3, 0.3), 0.5, Ease.backOut)
-                        
-                        self.logo:setAlpha(0.001)
-                        t7:tweenProperty(self.logo, "alpha", 1, 0.15, Ease.cubeOut)
-                    end)
-                end)
-            end)
-            t5:tweenProperty(self.logoBG, "rotation", math.rad(360), 0.7, Ease.cubeOut):setCompletionCallback(function(_)
-                self.logoBG:setRotation(0)
-            end)
-        end)
-    end)
-    local t = Timer:new() --- @type chip.utils.Timer
-    t:start(4, function(_)
-        local pinkStrip = Sprite:new() --- @type chip.graphics.Sprite
-        pinkStrip:makeSolid(Engine.gameWidth, Engine.gameHeight / 2, loveStripColors[1])
-        pinkStrip:setPosition(-pinkStrip:getWidth() / 2, pinkStrip:getHeight() / 2)
-        self:add(pinkStrip)
-
-        local blueStrip = Sprite:new() --- @type chip.graphics.Sprite
-        blueStrip:makeSolid(Engine.gameWidth, Engine.gameHeight / 2, loveStripColors[2])
-        blueStrip:setPosition(Engine.gameWidth + (blueStrip:getWidth() / 2), pinkStrip:getY() + blueStrip:getHeight())
-        self:add(blueStrip)
-
-        local t2 = Tween:new() --- @type chip.tweens.Tween
-        t2:tweenProperty(pinkStrip, "x", Engine.gameWidth / 2, 0.35, Ease.cubeIn)
-        t2:tweenProperty(blueStrip, "x", Engine.gameWidth / 2, 0.35, Ease.cubeIn)
-        
-        local t3 = Timer:new()
-        t3:start(0.4, function(_)
-            self.backdrop:kill()
-            self.bg:kill()
-            self.logoBG:kill()
-            self.heart:kill()
-            self.madeWith:kill()
-            self.logo:kill()
-
-            local tweenManager = TweenManager:new(false) --- @type chip.plugins.TweenManager
-            
-            local pinkStrip = Sprite:new() --- @type chip.graphics.Sprite
-            pinkStrip:makeSolid(Engine.gameWidth, Engine.gameHeight / 2, loveStripColors[1])
-            pinkStrip:setPosition(pinkStrip:getWidth() / 2, pinkStrip:getHeight() / 2)
-            
-            local blueStrip = Sprite:new() --- @type chip.graphics.Sprite
-            blueStrip:makeSolid(Engine.gameWidth, Engine.gameHeight / 2, loveStripColors[2])
-            blueStrip:setPosition(blueStrip:getWidth() / 2, pinkStrip:getY() + blueStrip:getHeight())
-
-            local function update()
-                tweenManager:update(Engine.deltaTime)
-            end
-            local function draw(_)
-                pinkStrip:draw()
-                blueStrip:draw()
-            end
-            MouseCursor.setVisibility(true)
-            Engine.postUpdate:connect(update)
-            Engine.postSceneDraw:connect(draw)
-            Engine.switchScene(self.initialScene)
-
-            local t2 = Tween:new(tweenManager) --- @type chip.tweens.Tween
-            t2:tweenProperty(pinkStrip, "x", Engine.gameWidth + (pinkStrip:getWidth() / 2), 0.35, Ease.cubeOut)
-            t2:tweenProperty(blueStrip, "x", -(blueStrip:getWidth() / 2), 0.35, Ease.cubeOut)
-            
-            t2:setCompletionCallback(function(_)
-                Engine.postUpdate:disconnect(update)
-                Engine.postSceneDraw:disconnect(draw)
-
-                pinkStrip:free()
-                blueStrip:free()
-            end)
-        end)
-    end)
 end
 
 return SplashScene

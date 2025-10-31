@@ -12,15 +12,18 @@ function TestState:init()
 	local x = Engine.gameWidth/2
 	local y = Engine.gameHeight/2
 
-	self.judgement = Judgement:new(x, y, Notefield.range/8)
-	--self.judgement.origin = Point:new(0.5, 0.5)
-	--self.judgement:playAnim()
-	self:add(self.judgement)
-
-	Timer:new():start(1, function() self.judgement:playAnim() end)
+	self.note = Note:new()
+	self.note:setX(x)
+	self.note:setY(y)
+	self.note:setAlpha(0.1)
+	self.note.length = 24
+	self:add(self.note)
 end
 
 function TestState:update(dt)
+	self.tmr = self.tmr + dt
+	self.note.scale.x = 1 + math.abs(math.cos(self.tmr))*1.25
+	self.note.scale.y = 1 + math.abs(math.cos(self.tmr))*1.25
 	self.super.update(self, dt)
 end
 

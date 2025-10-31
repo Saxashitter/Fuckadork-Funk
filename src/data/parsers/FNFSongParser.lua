@@ -6,7 +6,7 @@ function FNFSongParser.parse(data)
 		leftSide = data.song.player2 or "dad",
 		speaker = data.song.gfVersion or data.song.player3 or "gf",
 		speed = data.song.speed or 1,
-		bpm = data.song.bpm or 120
+		bpm = data.song.bpm or 120,
 	}
 
 	-- custom note parsing and all, lol

@@ -45,7 +45,7 @@ function GameState:constructor(...)
 	self.line:setY(yOffset - height/2)
 
 	self.song:addSource(self.currentSong, "Inst")
-	if self.song.vocals then
+	if self.chart.vocals then
 		self.song:addSource(self.currentSong, "funkin/Voices")
 	end
 

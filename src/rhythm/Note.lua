@@ -143,17 +143,14 @@ function Note:draw()
 				)
 			)
 		else
-			-- since its downscroll, as opposed to the note cropping up
-			-- the note should crop from the bottom to the top
-			-- length doesnt scale with note
-			-- tail height changes based on scale
-			-- 
 			local crop = math.max(0, math.min(1, self.length / tail:getHeight()))
+
 			tail:setY(self:getY() - self.length + tail:getHeight())
 			tail:setClipRect(Rect:new(
-				0, 0,
+				0,
+				tail:getFrameHeight() * (1-crop),
 				tail:getFrameWidth(),
-				math.max(0, crop * tail:getFrameHeight())
+				tail:getFrameHeight()
 			))
 		end
 		tail:draw()

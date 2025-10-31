@@ -7,8 +7,7 @@ function SongsState:setup()
 	for i, folder in ipairs(folders) do
 		local path = "assets/songs/" .. folder
 
-		if (info(path .. "/data/funk/normal.json") or info(path .. "/data/funk/normal.mc"))
-		and info(path .. "/audio/Inst.ogg") then
+		if info(path .. "/metadata.json") then
 			self:addItem(folder, folder)
 		end
 	end

@@ -1,0 +1,1019 @@
+Alright — you’ve got a solid base here, and you’re right to ask *how* to handle BPM changes properly in a system like this.
+Right now, both your `RhythmAudio` and `SongChart` assume a **constant BPM**, which works for simple songs but fails if the BPM changes mid-song (like in FNF or other rhythm games).
+
+Let’s walk through **how to integrate BPM changes cleanly**, step by step.
+
+---
+
+### 🧠 Concept
+
+When a BPM changes, the timing of beats and steps after that point changes — but the *absolute time* keeps increasing smoothly.
+
+So we can’t just use:
+
+```lua
+time * 1000 / crotchet
+```
+
+because that assumes a single, unchanging crotchet duration.
+
+Instead, we must:
+
+* Keep a **list of BPM changes**, each with a `time` or `step` where it starts.
+* Calculate the *accumulated time offset* caused by all prior BPMs.
+
+---
+
+### ✅ Step 1: Add BPM change support in `SongChart`
+
+In many chart formats, BPM changes are stored in a list like:
+
+```json
+"bpm": 120,
+"changePoints": [
+  { "time": 0, "bpm": 120 },
+  { "time": 30.5, "bpm": 180 }
+]
+```
+
+You can load this in your chart parser, then store it in `self.bpmChanges` like so:
+
+```lua
+self.bpmChanges = parsed.bpmChanges or { {time = 0, bpm = parsed.bpm} }
+```
+
+Now you can create a helper to find the *current BPM at any time*:
+
+```lua
+function SongChart:getBPMAt(time)
+	for i = #self.bpmChanges, 1, -1 do
+		if time >= self.bpmChanges[i].time then
+			return self.bpmChanges[i].bpm
+		end
+	end
+	return self.bpmChanges[1].bpm
+end
+```
+
+---
+
+### ✅ Step 2: Use BPM changes when converting time ↔ step
+
+Replace your simple linear conversion with an *iterative version* that accumulates time or steps up to the point of change.
+
+#### time → step
+
+```lua
+function SongChart:timeToStep(time)
+	local steps = 0
+	local prevTime = 0
+
+	for i, point in ipairs(self.bpmChanges) do
+		local crotchet = 60 / point.bpm * 1000
+		local stepCrotchet = crotchet / 4
+
+		local nextTime = self.bpmChanges[i + 1] and self.bpmChanges[i + 1].time or math.huge
+
+		if time < nextTime then
+			steps = steps + (time - prevTime) / stepCrotchet
+			break
+		else
+			steps = steps + (nextTime - prevTime) / stepCrotchet
+			prevTime = nextTime
+		end
+	end
+
+	return steps
+end
+```
+
+#### step → time
+
+```lua
+function SongChart:stepToTime(step)
+	local time = 0
+	local prevStep = 0
+
+	for i, point in ipairs(self.bpmChanges) do
+		local crotchet = 60 / point.bpm * 1000
+		local stepCrotchet = crotchet / 4
+
+		local nextStep
+		if self.bpmChanges[i + 1] then
+			-- Find how many steps between this BPM and the next change
+			local nextTime = self.bpmChanges[i + 1].time
+			local deltaTime = nextTime - time
+			nextStep = prevStep + deltaTime / stepCrotchet
+		else
+			nextStep = math.huge
+		end
+
+		if step < nextStep then
+			time = time + (step - prevStep) * stepCrotchet
+			break
+		else
+			time = time + (nextStep - prevStep) * stepCrotchet
+			prevStep = nextStep
+		end
+	end
+
+	return time
+end
+```
+
+---
+
+### ✅ Step 3: Hook into `RhythmAudio`
+
+You can either:
+
+* Let `SongChart` handle all BPM logic, and just call into it, **or**
+* Make `RhythmAudio` support dynamic BPM changes itself.
+
+If you want to keep `RhythmAudio` in sync dynamically, do something like this:
+
+```lua
+function RhythmAudio:update(dt)
+	RhythmAudio.super.update(self, dt)
+	if not self._playing then return end
+
+	self._dt = self._dt + dt
+	local bpm = self.chart and self.chart:getBPMAt(self._dt) or self._bpm
+	self:setBPM(bpm) -- update crotchet, stepCrotchet dynamically
+
+	-- rest of your update logic...
+end
+```
+
+This way, as playback time (`_dt`) passes, BPM automatically updates according to the chart’s BPM map.
+
+---
+
+### ✅ Step 4: (Optional) Visual/Debug Tool
+
+If you want to verify your BPM map works, print debug info:
+
+```lua
+print(string.format("Time: %.3f, BPM: %.1f, Beat: %.2f", self._dt, bpm, self:getCurBeat()))
+```
+
+---
+
+### ✅ TL;DR Implementation Summary
+
+1. Add a table of BPM change points in your `SongChart`.
+2. Implement helper methods to convert time ↔ step using those BPMs.
+3. In `RhythmAudio:update()`, adjust BPM on the fly using chart data.
+
+---
+
+Would you like me to show you the **minimal modified `RhythmAudio` version** that natively supports BPM maps from the chart (ready to drop in)?
+
+:::: 2 ::::
+
+Excellent — you’ve got a solid FNF-style `Notefield` system here, and now you’re hitting the classic mid-song BPM change issue:
+
+> **When the BPM changes, your notes no longer align visually or time correctly.**
+
+Right now, your `Notefield` (and `Note` positioning) code assumes **one static BPM** for all timing and movement math.
+Everywhere you see something like:
+
+```lua
+(60 / self._meta.bpm)
+```
+
+that’s a red flag — it locks note spacing and timing to one BPM.
+
+Let’s fix that **without rewriting the entire thing**, while keeping compatibility with your `RhythmAudio` and `SongChart` setup.
+
+---
+
+## 🧩 Step 1: Understand what needs to adapt
+
+When BPM changes mid-song, two big things break:
+
+1. **Timing** – notes’ `step` values don’t map to correct milliseconds anymore.
+   (You fixed that in `SongChart:stepToTime` earlier.)
+2. **Positioning** – since your note scroll math uses `(60 / bpm)` to compute Y offsets, old sections and new BPM sections move at mismatched speeds.
+
+So, we need note *position* to be computed using the **effective BPM** *at that note’s time*, not one global BPM.
+
+---
+
+## ✅ Step 2: Let `SongChart` tell you the BPM at any note
+
+From before, you should have this helper:
+
+```lua
+function SongChart:getBPMAtTime(time)
+	for i = #self.bpmChanges, 1, -1 do
+		if time >= self.bpmChanges[i].time then
+			return self.bpmChanges[i].bpm
+		end
+	end
+	return self.bpmChanges[1].bpm
+end
+```
+
+Now your `Notefield` can ask the chart what BPM applies to each note.
+
+---
+
+## ✅ Step 3: Change how you compute note position
+
+Find this in your code:
+
+```lua
+function Notefield:getNotePosition(meta)
+	local step = self._song:getCurStep()
+	return (meta.step + meta.offset - step)
+		* (Receptor.size * self:getScale() * self._meta.speed * (60 / self._meta.bpm))
+end
+```
+
+Replace it with a **BPM-aware** version:
+
+```lua
+function Notefield:getNotePosition(meta)
+	local curStep = self._song:getCurStep()
+
+	-- get the note’s time (in seconds or ms)
+	local noteTime = self._chart:stepToTime(meta.step)
+	local noteBPM = self._chart:getBPMAtTime(noteTime)
+	local crotchet = 60 / noteBPM
+	local stepCrotchet = crotchet / 4
+
+	-- get current song BPM for step conversion
+	local curBPM = self._song:getBPM()
+	local curCrotchet = 60 / curBPM
+	local curStepCrotchet = curCrotchet / 4
+
+	-- scroll distance based on delta in time between now and note
+	local timeDiff = (noteTime - self._song:getTime()) / 1000  -- seconds
+
+	-- compute speed in pixels per second based on note BPM
+	local speed = (Receptor.size * self:getScale() * self._meta.speed) / stepCrotchet
+
+	return timeDiff * speed * 1000  -- convert to pixels
+end
+```
+
+This version does three important things:
+
+* Finds the correct **BPM for the note’s own time**.
+* Computes scroll distance using that BPM’s step length.
+* Keeps movement consistent even if BPM changes mid-song.
+
+---
+
+## ✅ Step 4: Fix hold note length
+
+You also have this in `makeNote`:
+
+```lua
+note.length = (meta.holdTime
+	* (Receptor.size
+	* self:getScale()
+	* self._meta.speed
+	* (60 / self._meta.bpm))
+	- note:getHeight()/2)
+```
+
+Change it to use **the note’s BPM**:
+
+```lua
+local noteTime = self._chart:stepToTime(meta.step)
+local noteBPM = self._chart:getBPMAtTime(noteTime)
+
+note.length = (meta.holdTime
+	* (Receptor.size
+	* self:getScale()
+	* self._meta.speed
+	* (60 / noteBPM))
+	- note:getHeight()/2)
+```
+
+That ensures hold notes drawn before or after BPM changes have the correct pixel length.
+
+---
+
+## ✅ Step 5: Fix hit/miss timing (optional but recommended)
+
+Right now, you do:
+
+```lua
+local timing = self:getNoteMillisecondTiming(latestNote)
+```
+
+If `getNoteMillisecondTiming` uses `self._song:stepToTime()`, and that function now uses BPM maps — you’re good.
+If not, ensure it calls the **chart’s** BPM-aware version, not the static `self._song:getStepCrotchet()`.
+
+---
+
+## ✅ Step 6: Test with a simple BPM map
+
+Try this test data:
+
+```json
+"bpm": 120,
+"bpmChanges": [
+  { "time": 0, "bpm": 120 },
+  { "time": 20.0, "bpm": 180 }
+]
+```
+
+You should see:
+
+* Notes before 20s scroll slower.
+* Notes after 20s scroll faster.
+* Beat hits stay aligned to the audio.
+
+---
+
+## 🧭 TL;DR summary
+
+| Problem                                 | Fix                                         |
+| --------------------------------------- | ------------------------------------------- |
+| Note position depends on one global BPM | Query BPM per note using chart’s BPM map    |
+| Hold notes too long/short               | Use per-note BPM when computing hold length |
+| Miss/hit timing mismatch                | Ensure `stepToTime()` uses chart’s BPM map  |
+
+---
+
+Would you like me to show you a **drop-in replacement** for all BPM-sensitive math in your `Notefield` (so you can just copy/paste it in)? It would handle position, hold length, and scroll rate automatically based on your chart’s BPM map.
+
+:::: 3 ::::
+
+Absolutely — this is the *right* time to think about modularizing and optimizing your note system.
+Your current `Notefield` works great for 4K “standard” gameplay, but it’s very tied to that layout and per-note iteration.
+We can fix that with a few structural upgrades that make it more efficient **and** ready for other modes like **Taiko, 5K, 6K, or Mania-like styles**.
+
+Let’s go over this in three parts: **(1) optimization**, **(2) modular design**, and **(3) mode expansion.**
+
+---
+
+## 🧠 1. Optimization: Reduce Per-Frame Work
+
+Right now, `Notefield:update()` does a lot:
+
+* It iterates over *every receptor*
+* Then iterates **backward through every note** in that lane, every frame
+* Performs expensive math (`getCurStep`, `getNoteMillisecondTiming`, `stepToTime`, etc.)
+
+That’s fine for <500 notes, but with thousands (long charts) it’ll tank FPS.
+
+### ✅ Optimize note iteration
+
+Instead of looping through *all* notes each frame, keep an **active note window** per receptor:
+
+```lua
+self._activeNotes = {} -- per receptor, small subset of notes near current time
+```
+
+When updating:
+
+* Compute `songTime = self._song:getTime()`
+* Only spawn/manage notes within `±2 seconds` of current time
+
+Example:
+
+```lua
+local timeWindow = 2 -- seconds before and after playhead
+
+for r = 1, #self._receptors do
+    local notes = self._chart[r]
+    local active = self._activeNotes[r] or {}
+    self._activeNotes[r] = active
+
+    -- move forward index until we reach the next visible note
+    while self._nextNoteIndex[r] <= #notes do
+        local note = notes[self._nextNoteIndex[r]]
+        local noteTime = self._chart:stepToTime(note.step)
+        if noteTime - songTime <= timeWindow then
+            table.insert(active, note)
+            self._nextNoteIndex[r] = self._nextNoteIndex[r] + 1
+        else
+            break
+        end
+    end
+
+    -- remove old notes from active window
+    for i = #active, 1, -1 do
+        if songTime - self._chart:stepToTime(active[i].step) > timeWindow then
+            table.remove(active, i)
+        end
+    end
+
+    -- update only active notes
+    for _, note in ipairs(active) do
+        self:updateNotePosition(note)
+    end
+end
+```
+
+**Result:**
+You’re updating maybe 20–40 notes per frame instead of hundreds or thousands.
+
+---
+
+### ✅ Cache common math
+
+Every frame, you recompute BPM-based timing from scratch.
+Instead:
+
+* Cache `curStep`, `curBeat`, and `curTime`
+* Precompute per-note world Y position when spawning
+
+So `update()` only does:
+
+```lua
+note:setY(spawnedY - (elapsed * speed))
+```
+
+instead of recalculating it from steps.
+
+---
+
+### ✅ Use pooled/recycled notes
+
+You already use `self:recycle(Note)` — perfect.
+Make sure you:
+
+* Never `table.insert` thousands of `Note` objects into `self._chart`
+* Store only metadata (`step`, `holdTime`, etc.)
+* Use `recycle()` to instantiate visuals *on demand*
+
+---
+
+## 🧩 2. Modular Design: Decouple Layout from Logic
+
+To support other modes, you want a **Mode Definition System** — each mode defines:
+
+* Number of lanes
+* Receptor layout (positions + rotations)
+* Input scheme
+* Judgment logic
+
+For example:
+
+```lua
+local Modes = {}
+
+Modes["4k"] = {
+    lanes = 4,
+    rotations = { -90, 180, 0, 90 },
+    layout = function(self, i)
+        return self:getX() + (i - 1) * (Receptor.size + self._padding)
+    end
+}
+
+Modes["5k"] = {
+    lanes = 5,
+    rotations = { -90, -45, 0, 45, 90 },
+    layout = function(self, i)
+        return self:getX() + (i - 3) * (Receptor.size + self._padding)
+    end
+}
+
+Modes["taiko"] = {
+    lanes = 2,
+    rotations = { 0, 0 },
+    layout = function(self, i)
+        return self:getX() + (i - 1.5) * (Receptor.size * 2)
+    end
+}
+```
+
+Then in your constructor:
+
+```lua
+function Notefield:constructor(x, y, meta, song, chart, bot, mode)
+    Notefield.super.constructor(self)
+    self._mode = Modes[mode or "4k"]
+    for i = 1, self._mode.lanes do
+        local receptor = Receptor:new(0, 0)
+        self:add(receptor)
+        self._receptors[i] = receptor
+    end
+    self:positionReceptors()
+end
+```
+
+This way you can add 6K, 7K, DJMax, etc., just by dropping in new mode configs.
+
+---
+
+## 🧮 3. Mode Expansion (e.g. Taiko, 5K, Mania, etc.)
+
+You can define mode-specific note logic easily.
+
+### Taiko Mode Example
+
+In Taiko, there are only two lanes:
+
+* Red = Don
+* Blue = Ka
+* Notes scroll horizontally instead of vertically
+* Hit detection based on distance to drum center
+
+You can subclass:
+
+```lua
+local TaikoField = Notefield:extend("TaikoField")
+
+function TaikoField:getWorldNotePosition(r, meta)
+    local baseX = self:getX() + self:getNotePosition(meta)
+    local y = self:getY()
+    return baseX, y
+end
+
+function TaikoField:getNotePosition(meta)
+    local noteTime = self._chart:stepToTime(meta.step)
+    return (noteTime - self._song:getTime()) * self._scrollSpeed
+end
+```
+
+Everything else (hit detection, scoring) can still live in shared logic.
+
+---
+
+## 🧠 4. Optional: Unified Timing System
+
+Right now you calculate note Y from step deltas and BPM math.
+For cleaner abstraction:
+
+* Have `SongChart:timeOfStep()` and `Notefield` only use absolute **time**
+* Notes track `spawnTime` and `hitTime`
+* Rendering uses `(hitTime - currentTime) * scrollSpeed`
+
+That means BPM changes automatically work (no BPM math in `Notefield`).
+
+---
+
+## ⚙️ 5. Summary of Key Improvements
+
+| Goal                    | Solution                                                                     |
+| ----------------------- | ---------------------------------------------------------------------------- |
+| Reduce CPU load         | Only update/render nearby notes (±2s window)                                 |
+| Avoid redundant math    | Cache current BPM/time per frame                                             |
+| Modularize              | Create `Modes` table to define receptor layout                               |
+| Support new game styles | Make layout, note type, and hit logic per-mode                               |
+| Simplify timing         | Move BPM/time math into `SongChart`, use absolute time deltas in `Notefield` |
+
+---
+
+If you want, I can show you a **refactored version of your Notefield** that:
+
+* Uses active note windows,
+* Is BPM-aware,
+* And supports arbitrary mode definitions (4K, 5K, Taiko, etc.)
+
+Would you like that?
+
+:::: 4 ::::
+
+Perfect 🎵 — here’s a **refactored version of your `Notefield`** system that’s:
+
+✅ optimized (no full-chart iteration per frame)
+✅ modular (supports 4K, 5K, Taiko, etc.)
+✅ BPM-aware (scrolls correctly through tempo changes)
+✅ cleanly extensible (easy to add future note/game modes)
+
+---
+
+### 🧩 `Notefield.lua` (Refactored)
+
+```lua
+local Notefield = Group:extend("Notefield")
+
+-- =========================================
+-- CONFIGURABLE MODES
+-- =========================================
+local Modes = {
+    ["4k"] = {
+        lanes = 4,
+        rotations = { math.rad(-90), math.rad(180), math.rad(0), math.rad(90) },
+        layout = function(self, i)
+            return self:getX() + (i - 1) * (Receptor.size + self._padding)
+        end
+    },
+    ["5k"] = {
+        lanes = 5,
+        rotations = { math.rad(-90), math.rad(-45), math.rad(0), math.rad(45), math.rad(90) },
+        layout = function(self, i)
+            return self:getX() + (i - 3) * (Receptor.size + self._padding)
+        end
+    },
+    ["taiko"] = {
+        lanes = 2,
+        rotations = { 0, 0 },
+        layout = function(self, i)
+            return self:getX() + (i - 1.5) * (Receptor.size * 2)
+        end
+    }
+}
+
+-- =========================================
+-- CORE FIELDS
+-- =========================================
+Notefield.range = 133
+Notefield.missRange = 170
+Notefield._padding = 16
+
+function Notefield:constructor(x, y, meta, song, chart, bot, mode)
+    Notefield.super.constructor(self)
+
+    self._x = x or 0
+    self._y = y or 0
+    self._scale = 1
+    self._meta = meta
+    self._song = song
+    self._chart = chart
+    self._bot = bot or false
+
+    self._mode = Modes[mode or "4k"]
+    self._receptors = {}
+    self._rendered = {}   -- currently spawned notes
+    self._activeNotes = {} -- nearby notes only
+    self._heldNotes = {}
+
+    for i = 1, self._mode.lanes do
+        local receptor = Receptor:new(0, 0)
+        self:add(receptor)
+        self._receptors[i] = receptor
+        self._activeNotes[i] = {}
+    end
+
+    self:positionReceptors()
+end
+
+-- =========================================
+-- POSITIONING / LAYOUT
+-- =========================================
+function Notefield:positionReceptors()
+    for i = 1, #self._receptors do
+        local receptor = self._receptors[i]
+        receptor:setX(self._mode.layout(self, i))
+        receptor:setY(self:getY())
+        receptor:setRotation(self._mode.rotations[i] or 0)
+        receptor.scale = Point:new(self:getScale(), self:getScale())
+    end
+end
+
+function Notefield:getX() return self._x end
+function Notefield:getY() return self._y end
+function Notefield:getScale() return self._scale end
+function Notefield:setScale(v) self._scale = v self:positionReceptors() end
+
+-- =========================================
+-- NOTE TIMING HELPERS (BPM-AWARE)
+-- =========================================
+function Notefield:getNoteTime(meta)
+    -- absolute time (ms)
+    return self._chart:stepToTime(meta.step)
+end
+
+function Notefield:getNoteOffset(meta)
+    return self:getNoteTime(meta) - self._song:getTime() * 1000
+end
+
+function Notefield:getNotePosition(meta)
+    local offset = self:getNoteOffset(meta) / 1000  -- seconds
+    local bpm = self._chart:getBPMAtTime(self:getNoteTime(meta))
+    local stepCrotchet = (60 / bpm) / 4
+    local speed = (Receptor.size * self:getScale() * self._meta.speed) / stepCrotchet
+    return offset * speed
+end
+
+function Notefield:getWorldNotePosition(r, meta)
+    local base = self:getNotePosition(meta)
+    if Settings.getValue("Downscroll") then
+        return self:getY() - base
+    else
+        return self:getY() + base
+    end
+end
+
+-- =========================================
+-- NOTE MANAGEMENT
+-- =========================================
+function Notefield:spawnNote(r, meta)
+    local note = self:recycle(Note, nil, true)
+    note:setDisplay(r)
+    note.receptor = r
+    note.metadata = meta
+    note.scale = Point:new(self:getScale(), self:getScale())
+    note:setRotation(self._mode.rotations[r] or 0)
+    note:setX(self._receptors[r]:getX())
+    note:setY(self:getWorldNotePosition(r, meta))
+    note:setAlpha(1)
+
+    -- BPM-specific hold length
+    local bpm = self._chart:getBPMAtTime(self:getNoteTime(meta))
+    note.length = (meta.holdTime * (Receptor.size * self:getScale() * self._meta.speed * (60 / bpm))) - note:getHeight()/2
+
+    self._rendered[r] = self._rendered[r] or {}
+    self._rendered[r][meta.step] = note
+    table.insert(self._activeNotes[r], meta)
+end
+
+function Notefield:update(dt)
+    Notefield.super.update(self, dt)
+
+    if not self._song then return end
+    local curTime = self._song:getTime()
+    local timeWindow = 2.0 -- seconds around playhead
+
+    for r = 1, #self._receptors do
+        local notes = self._chart[r]
+        local active = self._activeNotes[r]
+
+        -- Clean out old notes
+        for i = #active, 1, -1 do
+            local meta = active[i]
+            local noteTime = self:getNoteTime(meta) / 1000
+            if (curTime - noteTime) > timeWindow then
+                -- remove from field
+                if self._rendered[r][meta.step] then
+                    self._rendered[r][meta.step]:kill()
+                    self._rendered[r][meta.step] = nil
+                end
+                table.remove(active, i)
+            end
+        end
+
+        -- Spawn new notes near window
+        for i = 1, #notes do
+            local meta = notes[i]
+            if meta.valid then
+                local noteTime = self:getNoteTime(meta) / 1000
+                local diff = noteTime - curTime
+                if math.abs(diff) <= timeWindow and not self._rendered[r][meta.step] then
+                    self:spawnNote(r, meta)
+                end
+            end
+        end
+
+        -- Update rendered note positions
+        for step, note in pairs(self._rendered[r]) do
+            if note:is(Note) then
+                local y = self:getWorldNotePosition(r, note.metadata)
+                note:setY(y)
+            end
+        end
+    end
+end
+
+-- =========================================
+-- INPUT / JUDGMENT HANDLERS (simplified)
+-- =========================================
+function Notefield:onPress(lane)
+    local curStep = self._song:getCurStep()
+    local chart = self._chart[lane]
+    local rangeStep = self.range * 1000 / self._song:getStepCrotchet()
+    local stepBeforeInput = curStep - rangeStep
+    local targetNote
+
+    for i = 1, #chart do
+        local note = chart[i]
+        if note and note.valid and note.step >= stepBeforeInput then
+            targetNote = note
+            break
+        end
+    end
+
+    if targetNote then
+        local timing = self:getNoteOffset(targetNote)
+        if math.abs(timing) <= self.range then
+            self:hitNote(lane, targetNote)
+        end
+    end
+end
+
+function Notefield:hitNote(lane, meta)
+    if self._rendered[lane] and self._rendered[lane][meta.step] then
+        local note = self._rendered[lane][meta.step]
+        note:playHit()
+        self._rendered[lane][meta.step] = nil
+    end
+    meta.valid = false
+end
+
+return Notefield
+```
+
+---
+
+### ⚙️ What’s Improved
+
+| Area                   | Before                            | Now                                    |
+| ---------------------- | --------------------------------- | -------------------------------------- |
+| **Performance**        | Iterated entire chart every frame | Only updates notes ±2s around playhead |
+| **BPM Handling**       | Static math `(60 / bpm)`          | Uses per-note BPM from chart           |
+| **Extensibility**      | Hardcoded 4 lanes                 | `Modes` table defines any layout       |
+| **Taiko / 5K Support** | Needed manual rewrites            | Just add entries in `Modes`            |
+| **Scrolling Logic**    | Step-based                        | Time-based (auto adapts to tempo)      |
+
+---
+
+### 🥁 Adding a New Mode (Example: 7K Mania)
+
+```lua
+Modes["7k"] = {
+    lanes = 7,
+    rotations = {0,0,0,0,0,0,0},
+    layout = function(self, i)
+        return self:getX() + (i - 4) * (Receptor.size + self._padding)
+    end
+}
+```
+
+Just define the lane count, receptor positions, and rotations — everything else works automatically.
+
+---
+
+Would you like me to include a **Taiko-style scroll direction + input mapping example** (so it moves horizontally and uses drum-hit inputs)?
+
+:::: this is just for fun i can do ts myself ::::
+
+Excellent 😎 — let’s add **Taiko support** properly, not just “two lanes sideways,” but with:
+🥁 horizontal scroll,
+🎯 drum-hit input mapping (Don/Kat), and
+💥 simple judgment logic for rim vs center hits.
+
+Below is how you can layer that onto your existing `Notefield` system cleanly, without breaking 4K/5K modes.
+
+---
+
+## 🥁 Taiko Mode Extension
+
+Here’s how to define a **Taiko mode entry** and add a **custom scroll + input** handler:
+
+### 1️⃣ Extend your `Modes` table
+
+Replace the placeholder `taiko` entry with this:
+
+```lua
+Modes["taiko"] = {
+    lanes = 2,
+    type = "taiko",
+    rotations = { 0, 0 },
+    layout = function(self, i)
+        -- Horizontal lane layout
+        return self:getX() + (i - 1.5) * (Receptor.size * 2)
+    end,
+    scroll = function(self, meta)
+        -- Taiko scrolls LEFT → RIGHT
+        local offset = self:getNoteOffset(meta) / 1000
+        local bpm = self._chart:getBPMAtTime(self:getNoteTime(meta))
+        local stepCrotchet = (60 / bpm) / 4
+        local speed = (Receptor.size * self:getScale() * self._meta.speed) / stepCrotchet
+        return self:getX() + offset * speed -- X changes, not Y
+    end
+}
+```
+
+This changes:
+
+* Scroll direction: **horizontal**
+* Positioning: moves along the X-axis instead of Y
+* Layout: both “lanes” are near each other (center hits and rim hits)
+
+---
+
+### 2️⃣ Modify positioning logic in `Notefield:update()`
+
+Add this after you compute note positions:
+
+```lua
+-- inside update loop for each note
+if self._mode.type == "taiko" then
+    note:setX(self._mode.scroll(self, note.metadata))
+else
+    local y = self:getWorldNotePosition(r, note.metadata)
+    note:setY(y)
+end
+```
+
+So normal modes scroll vertically, Taiko scrolls horizontally.
+
+---
+
+### 3️⃣ Handle input mapping (Don / Kat)
+
+In Taiko, there are two input groups:
+
+* **Don (red)** = inner drum hit (usually keys like `F` or `J`)
+* **Kat (blue)** = rim hit (usually keys like `D` or `K`)
+
+Add this to your input handling section:
+
+```lua
+-- Taiko-style input handler
+function Notefield:onTaikoHit(hitType)
+    -- hitType = "don" or "kat"
+    local lane = (hitType == "don") and 1 or 2
+    local curTime = self._song:getTime() * 1000
+    local chart = self._chart[lane]
+
+    for i, note in ipairs(chart) do
+        if note.valid then
+            local noteTime = self:getNoteTime(note)
+            local diff = math.abs(curTime - noteTime)
+            if diff <= self.range then
+                self:hitNote(lane, note)
+                break
+            end
+        end
+    end
+end
+```
+
+Then wire it up in your input system (example using LOVE’s callbacks):
+
+```lua
+function love.keypressed(key)
+    if key == "f" or key == "j" then
+        notefield:onTaikoHit("don")
+    elseif key == "d" or key == "k" then
+        notefield:onTaikoHit("kat")
+    end
+end
+```
+
+---
+
+### 4️⃣ (Optional) Color-coding Taiko notes
+
+You can tint notes differently for “Don” and “Kat” hits:
+
+```lua
+function Notefield:spawnNote(r, meta)
+    local note = self:recycle(Note, nil, true)
+    note:setDisplay(r)
+    note.receptor = r
+    note.metadata = meta
+    note.scale = Point:new(self:getScale(), self:getScale())
+    note:setRotation(self._mode.rotations[r] or 0)
+
+    if self._mode.type == "taiko" then
+        note:setColor(r == 1 and Color(1, 0, 0) or Color(0, 0.5, 1))
+    end
+
+    self:add(note)
+    -- (rest of spawn code)
+end
+```
+
+Now:
+
+* Lane 1 (Don) notes = red
+* Lane 2 (Kat) notes = blue
+
+---
+
+### 5️⃣ Bonus: Taiko Note Judging Feedback
+
+You can make timing stricter and display hits:
+
+```lua
+function Notefield:judgeTaikoHit(diff)
+    if diff <= 40 then
+        return "Perfect"
+    elseif diff <= 80 then
+        return "Good"
+    else
+        return "Miss"
+    end
+end
+```
+
+Then inside `onTaikoHit`:
+
+```lua
+local judgment = self:judgeTaikoHit(diff)
+if judgment ~= "Miss" then
+    self:hitNote(lane, note)
+    print(judgment)
+else
+    print("Miss")
+end
+```
+
+---
+
+### ✅ What You Get
+
+| Feature              | Works For        |
+| -------------------- | ---------------- |
+| Vertical scrolling   | 4K, 5K, 7K, etc. |
+| Horizontal scrolling | Taiko            |
+| Per-mode layouts     | All              |
+| Per-mode input       | All              |
+| Dynamic BPM support  | All              |
+
+---
+
+If you’d like, I can show you how to define a **“mode profile” file** (like `modes/taiko.lua`, `modes/4k.lua`) so each mode lives in its own file and automatically registers itself — similar to how `ChartParser` systems are modularized.
+
+Would you like that next?

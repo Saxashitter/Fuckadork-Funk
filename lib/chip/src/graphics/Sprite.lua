@@ -436,12 +436,20 @@ end
 --- @param  axes  "x"|"y"|"xy"
 ---
 function Sprite:screenCenter(axes)
-    if axes:contains("x") then
-        self:setX((Engine.gameWidth - self:getFrameWidth()) * 0.5)
-    end
-    if axes:contains("y") then
-        self:setY((Engine.gameHeight - self:getFrameHeight()) * 0.5)
-    end
+	if axes:contains("x") then
+		local x = Engine.gameWidth/2
+		x = x - self:getWidth()*0.5
+		x = x + self:getWidth()*self.origin.x
+
+		self:setX(x)
+	end
+	if axes:contains("y") then
+		local y = Engine.gameHeight/2
+		y = y - self:getHeight()*0.5
+		y = y + self:getHeight()*self.origin.y
+
+		self:setY(y)
+	end
 end
 
 ---

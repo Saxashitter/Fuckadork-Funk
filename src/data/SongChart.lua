@@ -1,10 +1,12 @@
 local SongChart = Class:extend("SongChart")
 
-local chartPath = "assets/songs/%s/data/%s/%s"
+local chartPath = "assets/songs/%s/data/%s-%s.mc"
 local metaPath = "assets/songs/%s"
 local metaDataPath = "assets/songs/%s/metadata.json"
 
 SongChart.metadata = {
+	bpm = 120,
+	speed = 1,
 	vocals = true,
 	adaptiveVocals = false,
 	stage = "test",
@@ -14,44 +16,19 @@ SongChart.metadata = {
 }
 SongChart.metadata.__index = SongChart.metadata
 
-function SongChart:constructor(name, style, difficulty)
-	if style == nil then
-		style = "funk"
-	end
-	if difficulty == nil then
-		difficulty = "normal"
+function SongChart:constructor(name, mode)
+	if mode == nil then
+		mode = "funk"
 	end
 
-	self.path = metaPath:format(name)
 	if love.filesystem.getInfo(metaDataPath:format(name)) then
 		self.metadata = setmetatable(Json.decode(love.filesystem.read(metaDataPath:format(name))), self.metadata)
 	end
+	self.path = metaPath:format(name)
 
 	local json = "{}"
 	local path = chartPath:format(name, style, difficulty)
 	local parsed = {}
-
-	if love.filesystem.getInfo(path..".json") then
-		json = love.filesystem.read(path..".json")
-		json = Json.decode(json)
-
-		if FNFSongParser.isFNF(json) then
-			parsed = FNFSongParser.parse(json)
-			print("fnf song parse")
-		elseif PsychSongParser.isPsych(json) then
-			parsed = PsychSongParser.parse(json)
-			print("psych song parse")
-		else
-			error("Invalid .json song format.")
-		end
-	elseif love.filesystem.getInfo(path..".mc") then
-		json = love.filesystem.read(path..".mc")
-		json = Json.decode(json)
-
-		parsed = MalodySongParser.parse(json)
-		print("malody song parse")
-	end
-
 
 	-- now this is where it gets fun
 	self.rightSide = self.metadata.rightSide
@@ -59,9 +36,12 @@ function SongChart:constructor(name, style, difficulty)
 	self.speaker = self.metadata.speaker
 	self.vocals = self.metadata.vocals
 	self.adaptiveVocals = self.metadata.adaptiveVocals
-	self.bpm = parsed.bpm
-	self.speed = parsed.speed
-	self.notes = parsed.notes
+	self.bpm = self.metadata.bpm
+	self.speed = self.metadata.speed
+	self.notes = {
+		MalodySongParser.parse(Json.decode(love.filesystem.read(chartPath:format(name, "left", mode))), self.bpm),
+		MalodySongParser.parse(Json.decode(love.filesystem.read(chartPath:format(name, "right", mode))), self.bpm)
+	}
 end
 
 function SongChart:stepToTime(step)

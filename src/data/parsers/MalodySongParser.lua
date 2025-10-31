@@ -1,24 +1,14 @@
 local MalodySongParser = Class:extend("MalodySongParser", ...)
 
-function MalodySongParser.parse(data)
-	local parsed = {
-		rightSide = "bf",
-		leftSide = "dad",
-		speaker = "gf",
-		speed = 2,
-		bpm = data.time[1].bpm
-	}
+function MalodySongParser.parse(data, bpm)
+	local notes = {}
 
 	-- custom note parsing and all, lol
-	local crotchet = 60 / parsed.bpm * 1000
+	local crotchet = 60 / bpm * 1000
 	local stepCrotchet = crotchet / 4
 
-	parsed.notes = {}
-	for i = 1, 2 do
-		parsed.notes[i] = {}
-		for k = 1, 4 do
-			parsed.notes[i][k] = {}
-		end
+	for k = 1, 4 do
+		notes[k] = {}
 	end
 
 	for _,note in ipairs(data.note or {}) do
@@ -31,22 +21,20 @@ function MalodySongParser.parse(data)
 		-- beat[3] is snap
 		-- i could be wrong, can you research this?
 		local position = note.beat[1] + (note.beat[2] / note.beat[3])
-		position = (position * 60 / parsed.bpm) * 1000 / stepCrotchet 
+		position = (position * 60 / bpm) * 1000 / stepCrotchet 
 
 		local absolutePos = math.floor(position)
 		local offsetPos = position % 1
 
-		local side = 2
 		local field = note.column+1
 		local holdTime = 0
 
 		if note.endbeat then
 			holdTime = (note.endbeat[1] + (note.endbeat[2] / note.endbeat[3]))
 				- (note.beat[1] + (note.beat[2] / note.beat[3]))
-			holdTime = math.floor((holdTime * 60 / parsed.bpm) * 1000 / stepCrotchet)
+			holdTime = math.floor((holdTime * 60 / bpm) * 1000 / stepCrotchet)
 		end
 
-		local notes = parsed.notes[side]
 		local notefield = notes[field]
 
 		if #notefield < absolutePos then -- lets even things out
@@ -66,11 +54,7 @@ function MalodySongParser.parse(data)
 		::continue::
 	end
 
-	return parsed
-end
-
-function MalodySongParser.isFNF(data)
-	return data and data.song and type(data.song) == "table"
+	return notes
 end
 
 return MalodySongParser

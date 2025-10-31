@@ -38,12 +38,7 @@ function RhythmAudio:setSectionCallback(func)
 end
 
 function RhythmAudio:setFinishCallback(func)
-	if self._finishCallback then
-		self._songs[1].finished:disconnect(self._finishCallback)
-	end
-
 	self._finishCallback = func
-	self._songs[1].finished:connect(func)
 end
 
 function RhythmAudio:resynchSong()
@@ -82,6 +77,19 @@ function RhythmAudio:update(dt)
 	if math.floor(curSec) ~= math.floor(prevSec)
 	and self._sectionCallback then
 		self._sectionCallback(curSec)
+	end
+
+	local player = self._songs[1]
+
+	if self._dt >= player:getStream():getDuration() then
+		self._dt = player:getStream():getDuration()
+		self:pause()
+
+		if self._finishCallback then
+			self._finishCallback(self)
+		end
+
+		return
 	end
 
 	local songOffset = self._songs[1]:getPlaybackTime() - self._dt
