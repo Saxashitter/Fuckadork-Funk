@@ -22,7 +22,13 @@ Judgement.judgements = {
 		name = "Bad...",
 		score = 50,
 		image = "bad"
-	}
+	},
+	{
+		time = 133,
+		name = "Shit.",
+		score = 50,
+		image = "shit"
+	},
 	-- 133 for shit
 }
 

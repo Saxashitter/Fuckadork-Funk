@@ -40,6 +40,10 @@ function GameState:constructor(...)
 		yOffset = Engine.gameHeight - yOffset
 	end
 
+	--self.strumlineBG = Sprite:new() --couldnt figure this out today, sax if u wanna you can try and do it urself
+	--self.strumlineBG:makeSolid(Engine.gameWidth, 200, Color.BLACK) -- set the alpha based off of the settings lua valuo for it 
+	--self.strumlineBG:setY(yOffset - height/2)
+
 	self.line = Sprite:new()
 	self.line:makeSolid(Engine.gameWidth, height, Color.RED)
 	self.line:setY(yOffset - height/2)
@@ -140,7 +144,7 @@ function GameState:constructor(...)
 	if Settings.getValue("Downscroll") then
 		self.judgementGroup:setY(self.playerField:getY()
 			- self.playerField:getHeight()
-			- Receptor.size*self.playerField:getScale())
+			- Receptor.size*self.playerField:getScale() - 150)
 	end
 
 	self.playerField:setHitCallback(function(_, timing)

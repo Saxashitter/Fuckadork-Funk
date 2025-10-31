@@ -2,12 +2,12 @@ Chip = require("lib.chip")
 shove = require("lib.shove.shove")
 g3d = require("lib.g3d")
 
-KeyBinds = {
+KeyBinds = { --turns out this is for menus so these are not used in game
 	left = {"a", "left"},
 	down = {"s", "down"},
 	up = {"w", "up"},
 	right = {"d", "right"},
-	accept = {"space", "z"},
+	accept = {"return", "z"},
 	back = {"escape", "x"}
 }
 
@@ -32,15 +32,15 @@ recursiveRequire("src")
 Chip.init {
 	showSplashScreen = false,
 	debugMode = false,
-	gameWidth = 1280,
-	gameHeight = 720,
+	gameWidth = 1280, --default 1280
+	gameHeight = 720, -- default 720
 	noBorders = false,
 	targetFPS = 0,
 	physicsPerFrame = 4,
 	initialScene = MainMenuState:new(),
 	shove = {
 		resizable = true,
-		fullscreen = false
+		fullscreen = false -- this doesnt work, please fix this sax or atleast tell me how 
 	}
 }
 
