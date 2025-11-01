@@ -21,10 +21,7 @@ function MalodySongParser.parse(data, bpm)
 		-- beat[3] is snap
 		-- i could be wrong, can you research this?
 		local position = note.beat[1] + (note.beat[2] / note.beat[3])
-		position = (position * 60 / bpm) * 1000 / stepCrotchet 
-
-		local absolutePos = math.floor(position)
-		local offsetPos = position % 1
+		position = (position * 60 / bpm) * 1000
 
 		local field = note.column+1
 		local holdTime = 0
@@ -32,24 +29,17 @@ function MalodySongParser.parse(data, bpm)
 		if note.endbeat then
 			holdTime = (note.endbeat[1] + (note.endbeat[2] / note.endbeat[3]))
 				- (note.beat[1] + (note.beat[2] / note.beat[3]))
-			holdTime = math.floor((holdTime * 60 / bpm) * 1000 / stepCrotchet)
+			holdTime = (holdTime * 60 / bpm) * 1000
 		end
 
 		local notefield = notes[field]
 
-		if #notefield < absolutePos then -- lets even things out
-			for k = #notefield+1, absolutePos-1 do
-				notefield[k] = notefield[k] or {valid = false}
-			end
-		end
-
-		notefield[absolutePos] = {
+		table.insert(notefield, {
 			valid = true,
-			step = absolutePos,
-			offset = offsetPos,
+			position = position,
 			holdTime = holdTime,
 			field = field
-		}
+		})
 
 		::continue::
 	end

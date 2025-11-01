@@ -38,10 +38,19 @@ function SongChart:constructor(name, mode)
 	self.adaptiveVocals = self.metadata.adaptiveVocals
 	self.bpm = self.metadata.bpm
 	self.speed = self.metadata.speed
-	self.notes = {
-		MalodySongParser.parse(Json.decode(love.filesystem.read(chartPath:format(name, "left", mode))), self.bpm),
-		MalodySongParser.parse(Json.decode(love.filesystem.read(chartPath:format(name, "right", mode))), self.bpm)
-	}
+	self.notes = {}
+
+	if love.filesystem.getInfo(chartPath:format(name, "left", mode)) then
+		self.notes[1] = MalodySongParser.parse(Json.decode(love.filesystem.read(chartPath:format(name, "left", mode))), self.bpm)
+	else
+		self.notes[1] = {{},{},{},{}}
+	end
+
+	if love.filesystem.getInfo(chartPath:format(name, "right", mode)) then
+		self.notes[2] = MalodySongParser.parse(Json.decode(love.filesystem.read(chartPath:format(name, "right", mode))), self.bpm)
+	else
+		self.notes[2] = {{},{},{},{}}
+	end
 end
 
 function SongChart:stepToTime(step)

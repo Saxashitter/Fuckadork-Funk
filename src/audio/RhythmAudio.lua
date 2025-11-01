@@ -41,6 +41,10 @@ function RhythmAudio:setFinishCallback(func)
 	self._finishCallback = func
 end
 
+function RhythmAudio:setStartDelay(secs)
+	self._dt = self._dt - secs
+end
+
 function RhythmAudio:resynchSong()
 	for k, song in ipairs(self._songs) do
 		song:seek(self._dt)
@@ -58,7 +62,18 @@ function RhythmAudio:update(dt)
 	local prevBeat = self:getCurBeat()
 	local prevStep = self:getCurStep()
 
+	local underZero = self._dt < 0
+
 	self._dt = self._dt + dt
+
+	if self._dt >= 0
+	and underZero then
+		self._dt = 0
+	
+		for k, song in ipairs(self._songs) do
+			song:play()
+		end
+	end
 
 	local curSec = self:getCurSection()
 	local curBeat = self:getCurBeat()
@@ -94,7 +109,8 @@ function RhythmAudio:update(dt)
 
 	local songOffset = self._songs[1]:getPlaybackTime() - self._dt
 
-	if math.abs(songOffset) >= self._correction then
+	if self._dt >= 0
+	and math.abs(songOffset) >= self._correction then
 		self:resynchSong()
 	end
 end
@@ -129,6 +145,10 @@ function RhythmAudio:getCurSection()
 	return self:getTime() * 1000 / (self:getCrotchet()*4)
 end
 
+function RhythmAudio:getTime()
+	return self._dt
+end
+
 function RhythmAudio:beatToTime(beat)
 	return (beat / 1000) * self:getCrotchet()
 end
@@ -143,24 +163,30 @@ end
 
 function RhythmAudio:pause()
 	self._playing = false
-	for k, song in ipairs(self._songs) do
-		song:pause()
+	if self._dt >= 0 then
+		for k, song in ipairs(self._songs) do
+			song:pause()
+		end
 	end
 end
 
 function RhythmAudio:resume()
 	self._playing = true
-	for k, song in ipairs(self._songs) do
-		song:resume()
+	if self._dt >= 0 then
+		for k, song in ipairs(self._songs) do
+			song:resume()
+		end
 	end
 end
 
 function RhythmAudio:play()
-	self:seek(0)
 	self._playing = true
 
-	for k, song in ipairs(self._songs) do
-		song:play()
+	if self._dt >= 0 then
+		self:seek(0)
+		for k, song in ipairs(self._songs) do
+			song:play()
+		end
 	end
 end
 

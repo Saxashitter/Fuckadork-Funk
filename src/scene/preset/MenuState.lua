@@ -53,6 +53,7 @@ function MenuState:addItem(name, item)
 end
 
 function MenuState:setSelection(i)
+	AudioPlayer.playSFX("assets/sounds/boop.ogg")
 	self.selection = i
 
 	for k, v in ipairs(self.items) do
@@ -87,6 +88,7 @@ function MenuState:input(event)
 	end
 
 	if table.contains(KeyBinds.accept, event:getScanCode()) then
+		AudioPlayer.playSFX("assets/sounds/boop.ogg")
 		self:selected(self.items[self.selection].item)
 	end
 end
@@ -104,6 +106,7 @@ function MenuState:update(dt)
 	end
 
 	if self.gamePad:isPressed("a") then
+		AudioPlayer.playSFX("assets/sounds/boop.ogg")
 		self:selected(self.items[self.selection].item)
 	end
 

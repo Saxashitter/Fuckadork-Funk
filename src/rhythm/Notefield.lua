@@ -27,7 +27,6 @@ function Notefield:constructor(x, y, meta, song, chart, bot)
 	self._heldNotes = {}
 
 	self._noteAnims = {}
-	self._renderedSteps = {}
 
 	for i = 1, #chart do
 		local receptor = Receptor:new(0, 0)
@@ -35,7 +34,6 @@ function Notefield:constructor(x, y, meta, song, chart, bot)
 		self:add(receptor)
 
 		table.insert(self._receptors, receptor)
-		self._renderedSteps[i] = {}
 	end
 
 	self:positionReceptors()
@@ -71,23 +69,28 @@ function Notefield:update(dt)
 		end
 
 		local receptor = self._receptors[note.receptor]
-		local step = self._song:getCurStep()
 		local meta = note.metadata
 
-		local holdEnd = meta.step + meta.offset + meta.holdTime - step
+		-- (meta.position - time) * (Receptor.size * self:getScale() * self._meta.speed) / 1000
+
+		local time = self._song:getTime() * 1000
 
 		note:setX(receptor:getX())
 		note:setY(receptor:getY())
 		note.scale = Point:new(receptor.scale.x, receptor.scale.y)
-		note.length = math.max(holdEnd * (Receptor.size * self:getScale() * self._meta.speed * (60 / self._meta.bpm)), 0) - note:getHeight()/2
+		note.length = math.max(
+			--(((meta.position + meta.holdTime - time) * (Receptor.size * self:getScale() * self._meta.speed) / 1000)),
+			self:getScrollPosition(meta.position + meta.holdTime, true),
+			0
+		)
 	end)
 
 	-- TODO: cut down the amount of lines used here
 	-- iterate through receptors
 	for r = 1, #self._receptors do
 		-- iterate through every possible step within chart lane
-		for step = #self._chart[r], 1, -1 do
-			self:manageChartStep(r, step)
+		for note = #self._chart[r], 1, -1 do
+			self:manageChartStep(r, note)
 		end
 	end
 end
@@ -104,36 +107,22 @@ function Notefield:onPress(r)
 	local flooredStepBeforeInput = math.floor(stepBeforeInput)
 	local startOfLoop = math.floor(step - rangeStep*2)
 	local animTime = self._song:beatToTime(4)
+	local note = chart[1]
 
-	for i = startOfLoop, #chart do
-		local note = chart[i]
-
-		if note
-		and note.valid
-		and i >= stepBeforeInput then
-			latestNote = note
-			noteStep = i
-			break
-		end
-	end
-
-	if not latestNote then
+	if not note then
 		self:positionReceptors()
 		return false
 	end
 
-	local timing = self:getNoteMillisecondTiming(latestNote) 
-	if not self._bot then
-		print(("%.2f"):format(timing))
-	end
+	local timing = self:getNoteMillisecondTiming(note) 
 
 	if timing <= self.range then
-		if latestNote.holdTime > 0 then
+		if note.holdTime > 0 then
 			if self._char then
 				local hitAnims = self._char.flipX and self._char.flipHitAnims or self._char.hitAnims
 				self._char:play(hitAnims[r])
 			end
-			self:setReceptorHoldNote(r, noteStep)
+			self:setReceptorHoldNote(r, 1)
 
 			if self._holdCallback then
 				self._holdCallback(self, timing)
@@ -153,7 +142,7 @@ function Notefield:onPress(r)
 				local hitAnims = self._char.flipX and self._char.flipHitAnims or self._char.hitAnims
 				self._char:playTimed(hitAnims[r], animTime)
 			end
-			self:hitNote(r, noteStep)
+			self:hitNote(r, 1)
 		end
 		self:positionReceptors()
 		return true
@@ -169,7 +158,7 @@ function Notefield:onRelease(r)
 
 	-- unplay note anim and manage hold note
 	if self._heldNotes[r] then
-		self:hitNote(r, self._heldNotes[r].step)
+		self:hitNote(r, 1)
 
 		local anyHeld = false
 
@@ -241,24 +230,23 @@ function Notefield:makeNote(i, meta)
 	local receptors = self._receptors
 	local receptor = receptors[i]
 	local note = self:recycle(Note, nil, true)
+	local time = self._song:getTime() * 1000
 
 	note:setDisplay(i)
 	note.receptor = i
 	note.metadata = meta
 	note.scale = Point:new(self:getScale(), self:getScale())
 	note:setAlpha(1)
-	note.length = (meta.holdTime
-		* (Receptor.size
-		* self:getScale()
-		* self._meta.speed
-		* (60 / self._meta.bpm))
-		- note:getHeight()/2)
+	note.length = math.max(
+		self:getScrollPosition(meta.holdTime),
+		0
+	)
 	note:setX(self._receptors[i]:getX())
 	note:setY(self:getWorldNotePosition(i, meta))
 	note:setRotation(receptor:getRotation())
 	note:setAlpha(receptor:getAlpha())
 
-	self._renderedSteps[i][meta.step] = note
+	meta.rendered = note
 	return note
 end
 
@@ -285,16 +273,16 @@ function Notefield:hitNote(r, noteStep)
 	local timing = self:getNoteMillisecondTiming(noteData)
 
 	if noteData.holdTime > 0 then
-		timing = timing + self._song:stepToTime(noteData.holdTime) * 1000
+		timing = timing + noteData.holdTime
 	end
 
-	if self._renderedSteps[r][noteStep] then
+	if noteData.rendered then
 		if self._noteAnims[r] then
 			self._noteAnims[r]:kill()
 			self._noteAnims[r] = nil
 		end
 
-		local note = self._renderedSteps[r][noteStep]
+		local note = noteData.rendered
 
 		note:setAlpha(1)
 		if noteData.heldDown then
@@ -335,7 +323,7 @@ function Notefield:manageChartStep(r, step)
 	if self._heldNotes[r]
 	and step == self._heldNotes[r].step then
 		held = true
-		timing = timing + self._song:stepToTime(noteData.holdTime) * 1000
+		timing = timing + noteData.holdTime
 	end
 
 	if self._bot
@@ -368,54 +356,64 @@ function Notefield:manageChartStep(r, step)
 
 	if y < Engine.gameHeight + Receptor.size * self:getScale() / 2
 	and y > -Receptor.size * self:getScale() / 2
-	and not self._renderedSteps[r][step] then
+	and not noteData.rendered then
 		self:makeNote(r, noteData)
 	end
 end
 
-function Notefield:getNotePosition(meta)
-	local step = self._song:getCurStep()
-	return (meta.step + meta.offset - step)	* (Receptor.size * self:getScale() * self._meta.speed * (60 / self._meta.bpm))
+function Notefield:getScrollPosition(timing, subtract)
+	local songTime = self._song:getTime() * 1000
+	if not subtract then
+		songTime = 0
+	end
+	local msDiff = timing - songTime
+	local secPerBeat = 60000 / self._song:getBPM()
+	local beatDiff = msDiff / secPerBeat
+
+	-- Make each beat = receptor size * scale * speed
+	return beatDiff * (Receptor.size * self:getScale() * self._meta.speed)
 end
 
 function Notefield:getWorldNotePosition(r, meta)
 	local receptor = self._receptors[r]
 
 	if Settings.getValue("Downscroll") then
-		return self:getY() - self:getNotePosition(meta)
+		return self:getY() - self:getScrollPosition(meta.position, true)
 	end
 
-	return self:getY() + self:getNotePosition(meta)
+	return self:getY() + self:getScrollPosition(meta.position, true)
 end
 
 function Notefield:getNoteTiming(meta)
-	local step = self._song:getCurStep()
-	return meta.step + meta.offset - step
+	local time = self._song:getTime() * 1000
+	return (meta.position - time)
 end
 
 function Notefield:getNoteMillisecondTiming(meta)
-	return self._song:stepToTime(self:getNoteTiming(meta)) * 1000
+	return self:getNoteTiming(meta)
 end
 
 function Notefield:removeNoteFromChart(r, step, killRender)
 	if killRender == nil then killRender = true end
+	local noteData = self._chart[r][step]
 
-	if self._renderedSteps[r][step] then
+	if noteData.rendered then
 		if killRender then
-			self._renderedSteps[r][step]:kill()
-			self._renderedSteps[r][step] = nil
+			noteData.rendered:kill()
 		end
 	end
 
-	self._chart[r][step] = {valid = false}
+	table.remove(self._chart[r], step)
 end
 
 function Notefield:setReceptorHoldNote(r, step, timing)
 	self._chart[r][step].heldDown = true
 	self._heldNotes[r] = {step = step}
 
-	if self._renderedSteps[r][step] then
-		self._renderedSteps[r][step]:setAlpha(0)
+	local noteData = self._chart[r][step]
+
+	if noteData.rendered then
+		noteData.rendered:setAlpha(0)
 	end
 end
 

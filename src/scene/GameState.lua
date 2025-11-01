@@ -40,14 +40,6 @@ function GameState:constructor(...)
 		yOffset = Engine.gameHeight - yOffset
 	end
 
-	--self.strumlineBG = Sprite:new() --couldnt figure this out today, sax if u wanna you can try and do it urself
-	--self.strumlineBG:makeSolid(Engine.gameWidth, 200, Color.BLACK) -- set the alpha based off of the settings lua valuo for it 
-	--self.strumlineBG:setY(yOffset - height/2)
-
-	self.line = Sprite:new()
-	self.line:makeSolid(Engine.gameWidth, height, Color.RED)
-	self.line:setY(yOffset - height/2)
-
 	self.song:addSource(self.currentSong, "Inst")
 	if self.chart.vocals then
 		self.song:addSource(self.currentSong, "funkin/Voices")
@@ -118,6 +110,7 @@ function GameState:constructor(...)
 		t:tweenProperty(self.camera, "_x", camX, 0.6, Ease.quintInOut)
 		t:tweenProperty(self.camera, "_y", camY, 0.6, Ease.quintInOut)
 	end)
+	self.song:setStartDelay(3)
 
 	self.botField = Notefield:new(xOffset, yOffset, self.chart, self.song, self.chart.notes[1], true)
 	self.botField:setScale(scale)
@@ -133,6 +126,13 @@ function GameState:constructor(...)
 		self.botField:setX(xOffset)
 		self.botField:setScale(self.botField:getScale()*0.75)
 	end
+
+	local strumBGOffset = 16
+
+	self.strumlineBG = Sprite:new() --couldnt figure this out today, sax if u wanna you can try and do it urself
+	self.strumlineBG:setX(self.playerField:getX() - strumBGOffset)
+	self.strumlineBG:makeSolid(self.playerField:getWidth() + strumBGOffset, Engine.gameHeight, Color.BLACK) -- set the alpha based off of the settings lua valuo for it
+	self.strumlineBG:setAlpha(Settings.getValue("Strumline Background") / 100)
 
 	self.judgementGroup = CanvasLayer:new()
 	self.judgementGroup:setX(self.playerField:getX()
@@ -199,6 +199,7 @@ function GameState:init(songName)
 	self:add(self.left)
 
 	self:add(self.line, self.HUDcamera)
+	self:add(self.strumlineBG, self.HUDcamera)
 	self:add(self.playerField, self.HUDcamera)
 	self:add(self.botField, self.HUDcamera)
 	self:add(self.judgementGroup, self.HUDcamera)
@@ -219,6 +220,12 @@ end
 
 function GameState:input(event)
 	self.super.input(self, event)
+
+	--[[if event:is(InputEventTouch)
+	and event:isPressed()
+	and self.song:getTime() < 70 * 60 / self.song:getBPM() then
+		self.song:seek(70 * 60 / self.song:getBPM())
+	end]]
 
 	if not event:is(InputEventKey) then return end
 	if event:isRepeating() then return end
