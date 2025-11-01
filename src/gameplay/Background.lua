@@ -1,4 +1,4 @@
-local Background = Group:extend("Background", ...)
+local Background = CanvasLayer:extend("Background", ...)
 
 Background.path = "assets/stages/"
 Background.metaData = {
@@ -9,6 +9,19 @@ Background.metaData = {
 	sprites = {}
 }
 Background.metaData.__index = Background.metaData
+Background.spriteMetaData = {
+	key = "key",
+	type = "solid",
+	position = {0, 0},
+	dimensions = {1, 1},
+	image = "unknown",
+	color = Color.WHITE,
+	scale = {1, 1},
+	origin = {1, 1},
+	scrollFactor = {1, 1},
+	rotation = 0
+}
+Background.spriteMetaData.__index = Background.spriteMetaData
 
 function Background:constructor(folder)
 	self.super.constructor(self)
@@ -36,13 +49,21 @@ function Background:loadBackground(folder)
 	self.speaker = Point:new(meta.speaker[1], meta.speaker[2])
 
 	for _, data in ipairs(meta.sprites) do
+		local data = setmetatable(data, self.spriteMetaData)
 		local sprite = Sprite:new()
 
 		sprite:setX(data.position[1])
 		sprite:setY(data.position[2])
-		sprite:makeSolid(data.dimensions[1], data.dimensions[2], data.color)
-		sprite.scrollFactor = Point:new(0,0)
+		sprite.scrollFactor = Point:new(data.scrollFactor[1], data.scrollFactor[2])
+		sprite.scale = Point:new(data.scale[1], data.scale[2])
+		sprite.origin = Point:new(data.origin[1], data.origin[2])
 		sprite:setRotation(math.rad(data.rotation))
+		if data.type == "solid" then
+			sprite:makeSolid(data.dimensions[1], data.dimensions[2], data.color)
+		elseif data.type == "image" then
+			sprite:loadTexture(path.."/images/"..data.image..".png")
+		end
+		-- TODO: sparrow atlas, spritesheets, etc
 
 		self:add(sprite)
 	end

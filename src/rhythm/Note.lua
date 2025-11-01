@@ -118,7 +118,7 @@ function Note:draw()
 
 		tail.scale = Point:new(self.scale.x, self.scale.y)
 
-		if Settings.getValue("Downscroll") then
+		if Settings.get("Downscroll") then
 			tail.flipY = true
 		end
 
@@ -126,14 +126,14 @@ function Note:draw()
 			hold.scale = Point:new(self.scale.x, self.length - tail:getHeight())
 			hold:setX(self:getX())
 			hold:setY(self:getY())
-			if Settings.getValue("Downscroll") then
+			if Settings.get("Downscroll") then
 				hold:setY(self:getY() - hold:getHeight())
 			end
 			hold:draw()
 		end
 
 		tail:setX(self:getX())
-		if not Settings.getValue("Downscroll") then
+		if not Settings.get("Downscroll") then
 			tail:setY(self:getY() + self.length - tail:getHeight())
 			tail:setClipRect(
 				Rect:new(0,

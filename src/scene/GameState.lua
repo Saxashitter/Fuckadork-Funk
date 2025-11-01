@@ -36,7 +36,7 @@ function GameState:constructor(...)
 	local height = 8
 	local scale = 1.75
 
-	if Settings.getValue("Downscroll") then
+	if Settings.get("Downscroll") then
 		yOffset = Engine.gameHeight - yOffset
 	end
 
@@ -121,18 +121,20 @@ function GameState:constructor(...)
 	self.playerField:setX(Engine.gameWidth - self.playerField:getWidth() - xOffset)
 	self.playerField:setCharacter(self.right)
 
-	if Settings.getValue("Middlescroll") then
+	if Settings.get("Middlescroll") then
 		self.playerField:setX(Engine.gameWidth/2 - self.playerField:getWidth()/2)
 		self.botField:setX(xOffset)
 		self.botField:setScale(self.botField:getScale()*0.75)
 	end
 
-	local strumBGOffset = 16
+	local strumBGOffset = 48
 
 	self.strumlineBG = Sprite:new() --couldnt figure this out today, sax if u wanna you can try and do it urself
+	-- penny sucks at coding.wav
+	-- i dont blame you at all tbh LOL
 	self.strumlineBG:setX(self.playerField:getX() - strumBGOffset)
-	self.strumlineBG:makeSolid(self.playerField:getWidth() + strumBGOffset, Engine.gameHeight, Color.BLACK) -- set the alpha based off of the settings lua valuo for it
-	self.strumlineBG:setAlpha(Settings.getValue("Strumline Background") / 100)
+	self.strumlineBG:makeSolid(self.playerField:getWidth() + strumBGOffset*2, Engine.gameHeight, Color.BLACK) -- set the alpha based off of the settings lua valuo for it
+	self.strumlineBG:setAlpha(Settings.get("Strumline Background") / 100)
 
 	self.judgementGroup = CanvasLayer:new()
 	self.judgementGroup:setX(self.playerField:getX()
@@ -141,7 +143,7 @@ function GameState:constructor(...)
 		+ self.playerField:getHeight()
 		+ Receptor.size*self.playerField:getScale())
 
-	if Settings.getValue("Downscroll") then
+	if Settings.get("Downscroll") then
 		self.judgementGroup:setY(self.playerField:getY()
 			- self.playerField:getHeight()
 			- Receptor.size*self.playerField:getScale() - 150)
@@ -195,8 +197,8 @@ function GameState:init(songName)
 	self:add(self.song)
 
 	self:add(self.background)
-	self:add(self.right)
 	self:add(self.left)
+	self:add(self.right)
 
 	self:add(self.line, self.HUDcamera)
 	self:add(self.strumlineBG, self.HUDcamera)

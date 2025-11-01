@@ -6,17 +6,23 @@
 	"sprites": [
 		{
 			"key": "background",
-			"position": [-1600, -1600],
+			"type": "solid",
+			"position": [1280, 720],
 			"dimensions": [3200, 3200],
 			"color": 0xFFFFFFFF,
+			"scale": [1, 1],
+			"origin": [0.5, 0.5],
 			"scrollFactor": [0, 0],
 			"rotation": 0
 		},
 		{
 			"key": "floor",
+			"type": "solid",
 			"position": [-1000, 520],
 			"dimensions": [4000, 2000],
 			"color": 0xFF808080,
+			"scale": [1, 1],
+			"origin": [0, 0],
 			"scrollFactor": [0, 1],
 			"rotation": 0
 		}

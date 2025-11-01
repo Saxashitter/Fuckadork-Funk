@@ -377,7 +377,7 @@ end
 function Notefield:getWorldNotePosition(r, meta)
 	local receptor = self._receptors[r]
 
-	if Settings.getValue("Downscroll") then
+	if Settings.get("Downscroll") then
 		return self:getY() - self:getScrollPosition(meta.position, true)
 	end
 

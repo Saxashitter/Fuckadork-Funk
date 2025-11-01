@@ -1,53 +1,64 @@
-local Settings = {}
+local Settings = {
+	addOrder = {}
+}
 
-function Settings.makeSetting(name, value, description)
-	Settings[name] = {
-		value = value,
-		default = value,
-		description = description or ""
-	}
+local Setting = require("src.data.Setting")
+local SettingNumber = require("src.data.SettingNumber")
+
+function Settings.new(class)
+	Settings[class.name] = class
+	table.insert(Settings.addOrder, class)
 end
 
-function Settings.getValue(name)
+function Settings.get(name)
 	if not Settings[name] then
 		return
 	end
 
-	return Settings[name].value
+	return Settings[name]:get()
 end
 
-function Settings.setValue(name, value)
+function Settings.set(name, value)
 	if not Settings[name] then
 		return
 	end
 
-	if type(value) ~= type(Settings[name].default) then
-		error("Attempt to set "..name.." to a different type.")
+	Settings[name]:set(value)
+end
+
+function Settings.switch(name, value)
+	if not Settings[name] then
 		return
 	end
 
-	Settings[name].value = value
+	Settings[name]:switch(value)
 end
 
-Settings.makeSetting(
+Settings.new(Setting:new(
 	"Downscroll",
 	true,
 	"Changes the direction of scroll to be down instead of up."
-)
-Settings.makeSetting(
+))
+Settings.new(Setting:new(
 	"Middlescroll",
 	true,
-	"Pushes notes to the middle instead of which side you're on. As a bonus, opponent notes are scaled down and pushed to the other side."
-)
-Settings.makeSetting(
+	"Pushes notes to the middle instead of which side you're on. As a bonus, opponent notes are scaled down and pushed more to the side."
+))
+Settings.new(SettingNumber:new(
 	"Scroll Multiplier",
 	1,
-	"The higher it is, the faster your songs are. Vice versa for lower."
-)
-Settings.makeSetting(
+	0.1,
+	10,
+	0.1,
+	"The higher it is, the faster your scroll speed is. Vice versa for lower."
+))
+Settings.new(SettingNumber:new(
 	"Strumline Background",
-	50,
+	0,
+	0,
+	100,
+	1,
 	"Adds a black background behind your strumline to make the chart more readable. (0-100)"
-)
+))
 
 return Settings

@@ -68,6 +68,7 @@ function MenuState:setSelection(i)
 end
 
 function MenuState:selected(selection) end
+function MenuState:set(selection, i) end
 function MenuState:backPressed() end
 
 function MenuState:input(event)
@@ -87,6 +88,14 @@ function MenuState:input(event)
 		self:setSelection((self.selection % #self.items)+1)
 	end
 
+	if table.contains(KeyBinds.left, event:getScanCode()) then
+		self:set(self.items[self.selection].item, -1)
+	end
+
+	if table.contains(KeyBinds.right, event:getScanCode()) then
+		self:set(self.items[self.selection].item, 1)
+	end
+
 	if table.contains(KeyBinds.accept, event:getScanCode()) then
 		AudioPlayer.playSFX("assets/sounds/boop.ogg")
 		self:selected(self.items[self.selection].item)
@@ -103,6 +112,14 @@ function MenuState:update(dt)
 
 	if self.gamePad:isPressed("down") then
 		self:setSelection((self.selection % #self.items)+1)
+	end
+
+	if self.gamePad:isPressed("left") then
+		self:set(self.items[self.selection].item, -1)
+	end
+
+	if self.gamePad:isPressed("right") then
+		self:set(self.items[self.selection].item, 1)
 	end
 
 	if self.gamePad:isPressed("a") then
