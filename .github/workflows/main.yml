@@ -33,12 +33,13 @@ jobs:
           build-list: ./main.lua ./version.lua ./conf.lua ./src ./lib ./assets ./framework
           package-path: ${{ env.CORE_LOVE_PACKAGE_PATH }}
       - name: Upload to Catbox
+        id: upload
         run: |
           filePath="${{ env.CORE_LOVE_PACKAGE_PATH }}"
 
-          curl -F "reqtype=fileupload" -F "fileToUpload=@$filePath" https://catbox.moe/user/api.php >> upload.txt
-          echo "catbox=$(cat upload.txt)" >> $GITHUB_OUTPUT
-          cat upload.txt
+          response=$(curl -F "reqtype=fileupload" -F "fileToUpload=@$filePath" https://catbox.moe/user/api.php)
+          echo "catbox=$response" >> $GITHUB_OUTPUT
+          echo "$response"
 
   build-android:
     runs-on: ubuntu-latest
@@ -54,8 +55,18 @@ jobs:
           submodules: recursive
       - name: Download core love package
         run: |
-          filename = $(curl -sOWl "${filename_effective}" "${{ steps.build-core.outputs.catbox }}")
-          mv "$filename" "lovefile.love"
+          url=${{ steps.build-core.outputs.catbox }}
+
+          # Extract the filename from the URL
+          filename=$(basename "$url")
+
+          # Download the file
+          curl -L -o "$filename" "$url"
+
+          # Print confirmation
+          echo "Downloaded file: $filename"
+
+          mv filename lovefile.love
       - name: Build Android packages
         id: build-packages
         uses: love-actions/love-actions-android@v2
