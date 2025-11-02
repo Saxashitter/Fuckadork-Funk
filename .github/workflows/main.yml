@@ -126,8 +126,8 @@ jobs:
       OUTPUT_FOLDER: ./build
       RELEASE_FOLDER: ./release
     outputs:
-     32bit-catbox: ${{ steps.build-windows.outputs.32bit-catbox }}
-     64bit-catbox: ${{ steps.build-windows.outputs.64bit-catbox }}
+      32bit-catbox: ${{ steps.build-windows.outputs.32bit-catbox }}
+      64bit-catbox: ${{ steps.build-windows.outputs.64bit-catbox }}
     steps:
       - uses: actions/checkout@v4
         with:
