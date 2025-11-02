@@ -22,7 +22,7 @@ jobs:
       OUTPUT_FOLDER: ./build
       RELEASE_FOLDER: ./release
     outputs:
-      catbox: ${{ steps.build-core.outputs.catbox }}
+      core-catbox: ${{ steps.file-links.outputs.core-catbox }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -33,12 +33,12 @@ jobs:
           build-list: ./main.lua ./version.lua ./conf.lua ./src ./lib ./assets ./framework
           package-path: ${{ env.CORE_LOVE_PACKAGE_PATH }}
       - name: Upload to Catbox
-        id: upload
+        id: file-links
         run: |
           filePath="${{ env.CORE_LOVE_PACKAGE_PATH }}"
 
           response=$(curl -F "reqtype=fileupload" -F "fileToUpload=@$filePath" https://catbox.moe/user/api.php)
-          echo "catbox=$response" >> $GITHUB_OUTPUT
+          echo "core-catbox=$response" >> $GITHUB_OUTPUT
           echo "$response"
 
   build-android:
@@ -48,14 +48,14 @@ jobs:
       OUTPUT_FOLDER: ./build
       RELEASE_FOLDER: ./release
     outputs:
-      catbox: ${{ steps.build-android.outputs.catbox }}
+      android-catbox: ${{ steps.file-links.outputs.android-catbox }}
     steps:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
       - name: Download core love package
         run: |
-          url=${{ needs.build-core.outputs.catbox }}
+          url=${{ needs.file-links.outputs.core-catbox }}
 
           # Extract the filename from the URL
           filename=$(basename "$url")
@@ -79,12 +79,13 @@ jobs:
           version-string: "1.0"
           output-folder: ${{ env.OUTPUT_FOLDER }}
       - name: Upload to Catbox
+        id: file-links
         run: |
           filePath="${{ env.OUTPUT_FOLDER }}/${{ env.ARTIFACT_NAME }}-release.apk"
 
-          curl -F "reqtype=fileupload" -F "fileToUpload=@$filePath" https://catbox.moe/user/api.php >> upload.txt
-          echo "catbox=$(cat upload.txt)" >> $GITHUB_OUTPUT
-          cat upload.txt
+          response=$(curl -F "reqtype=fileupload" -F "fileToUpload=@$filePath" https://catbox.moe/user/api.php)
+          echo "android-catbox=$response" >> $GITHUB_OUTPUT
+          echo "$response"
 
   build-linux:
     runs-on: ubuntu-latest
