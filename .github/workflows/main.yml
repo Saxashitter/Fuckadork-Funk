@@ -126,7 +126,7 @@ jobs:
           love-package: lovefile.love
           product-name: ${{ env.ARTIFACT_NAME }}
           output-folder: ${{ env.OUTPUT_FOLDER }}
-      - name: Upload AppImage to Catbox
+      - name: Upload to Catbox
         id: file-links
         run: |
           filePath="${{ env.OUTPUT_FOLDER }}/${{ env.ARTIFACT_NAME }}.AppImage"
@@ -134,9 +134,7 @@ jobs:
           response=$(curl -F "reqtype=fileupload" -F "fileToUpload=@$filePath" https://catbox.moe/user/api.php)
           echo "appimage-catbox=$response" >> $GITHUB_OUTPUT
           echo "$response"
-      - name: Upload Debian to Catbox
-        id: file-links
-        run: |
+
           filePath="${{ env.OUTPUT_FOLDER }}/${{ env.ARTIFACT_NAME }}.deb"
 
           response=$(curl -F "reqtype=fileupload" -F "fileToUpload=@$filePath" https://catbox.moe/user/api.php)
@@ -178,7 +176,7 @@ jobs:
           product-name: ${{ env.ARTIFACT_NAME }}
           app-id: ${{ secrets.WINDOWS_APP_ID }}
           output-folder: ${{ env.OUTPUT_FOLDER }}
-      - name: Upload 32-bit to Catbox
+      - name: Upload to Catbox
         id: file-links
         run: |
           filePath="${{ env.OUTPUT_FOLDER }}/${{ env.ARTIFACT_NAME }}_x86.zip"
@@ -186,9 +184,7 @@ jobs:
           response=$(curl -F "reqtype=fileupload" -F "fileToUpload=@$filePath" https://catbox.moe/user/api.php)
           echo "old-catbox=$response" >> $GITHUB_OUTPUT
           echo "$response"
-      - name: Upload 64-bit to Catbox
-        id: file-links
-        run: |
+
           filePath="${{ env.OUTPUT_FOLDER }}/${{ env.ARTIFACT_NAME }}_x64.zip"
 
           response=$(curl -F "reqtype=fileupload" -F "fileToUpload=@$filePath" https://catbox.moe/user/api.php)
