@@ -81,7 +81,7 @@ jobs:
       - name: Upload to Catbox
         id: file-links
         run: |
-          filePath="${{ env.OUTPUT_FOLDER }}/${{ env.ARTIFACT_NAME }}-release.apk"
+          filePath="${{ env.OUTPUT_FOLDER }}/${{ env.ARTIFACT_NAME }}-debug.apk"
 
           response=$(curl -F "reqtype=fileupload" -F "fileToUpload=@$filePath" https://catbox.moe/user/api.php)
           echo "android-catbox=$response" >> $GITHUB_OUTPUT
@@ -102,8 +102,18 @@ jobs:
           submodules: recursive
       - name: Download core love package
         run: |
-          filename = $(curl -sOWl "${filename_effective}" "${{ steps.build-core.outputs.catbox }}")
-          mv "$filename" "lovefile.love"
+          url=${{ needs.build-core.outputs.core-catbox }}
+
+          # Extract the filename from the URL
+          filename=$(basename "$url")
+
+          # Download the file
+          curl -L -o "$filename" "$url"
+
+          # Print confirmation
+          echo "Downloaded file: $filename"
+
+          mv "$filename" lovefile.love
       - name: Build Linux packages
         id: build-packages
         uses: love-actions/love-actions-linux@v2
@@ -117,19 +127,21 @@ jobs:
           product-name: ${{ env.ARTIFACT_NAME }}
           output-folder: ${{ env.OUTPUT_FOLDER }}
       - name: Upload AppImage to Catbox
+        id: file-links
         run: |
           filePath="${{ env.OUTPUT_FOLDER }}/${{ env.ARTIFACT_NAME }}.AppImage"
 
-          curl -F "reqtype=fileupload" -F "fileToUpload=@$filePath" https://catbox.moe/user/api.php >> upload1.txt
-          echo "appimage-catbox=$(cat upload1.txt)" >> $GITHUB_OUTPUT
-          cat upload1.txt
+          response=$(curl -F "reqtype=fileupload" -F "fileToUpload=@$filePath" https://catbox.moe/user/api.php)
+          echo "appimage-catbox=$response" >> $GITHUB_OUTPUT
+          echo "$response"
       - name: Upload Debian to Catbox
+        id: file-links
         run: |
           filePath="${{ env.OUTPUT_FOLDER }}/${{ env.ARTIFACT_NAME }}.deb"
 
-          curl -F "reqtype=fileupload" -F "fileToUpload=@$filePath" https://catbox.moe/user/api.php >> upload2.txt
-          echo "debian-catbox=$(cat upload2.txt)" >> $GITHUB_OUTPUT
-          cat upload2.txt
+          response=$(curl -F "reqtype=fileupload" -F "fileToUpload=@$filePath" https://catbox.moe/user/api.php)
+          echo "debian-catbox=$response" >> $GITHUB_OUTPUT
+          echo "$response"
 
   build-windows:
     runs-on: windows-latest
@@ -146,8 +158,18 @@ jobs:
           submodules: recursive
       - name: Download core love package
         run: |
-          filename = $(curl -sOWl "${filename_effective}" "${{ steps.build-core.outputs.catbox }}")
-          mv "$filename" "lovefile.love"
+          url=${{ needs.build-core.outputs.core-catbox }}
+
+          # Extract the filename from the URL
+          filename=$(basename "$url")
+
+          # Download the file
+          curl -L -o "$filename" "$url"
+
+          # Print confirmation
+          echo "Downloaded file: $filename"
+
+          mv "$filename" lovefile.love
       - name: Build Windows packages
         id: build-packages
         uses: love-actions/love-actions-windows@v2
@@ -157,16 +179,18 @@ jobs:
           app-id: ${{ secrets.WINDOWS_APP_ID }}
           output-folder: ${{ env.OUTPUT_FOLDER }}
       - name: Upload 32-bit to Catbox
+        id: file-links
         run: |
           filePath="${{ env.OUTPUT_FOLDER }}/${{ env.ARTIFACT_NAME }}_x86.zip"
 
-          curl -F "reqtype=fileupload" -F "fileToUpload=@$filePath" https://catbox.moe/user/api.php >> upload1.txt
-          echo "old-catbox=$(cat upload1.txt)" >> $GITHUB_OUTPUT
-          cat upload1.txt
+          response=$(curl -F "reqtype=fileupload" -F "fileToUpload=@$filePath" https://catbox.moe/user/api.php)
+          echo "old-catbox=$response" >> $GITHUB_OUTPUT
+          echo "$response"
       - name: Upload 64-bit to Catbox
+        id: file-links
         run: |
           filePath="${{ env.OUTPUT_FOLDER }}/${{ env.ARTIFACT_NAME }}_x64.zip"
 
-          curl -F "reqtype=fileupload" -F "fileToUpload=@$filePath" https://catbox.moe/user/api.php >> upload2.txt
-          echo "new-catbox=$(cat upload2.txt)" >> $GITHUB_OUTPUT
-          cat upload2.txt
+          response=$(curl -F "reqtype=fileupload" -F "fileToUpload=@$filePath" https://catbox.moe/user/api.php)
+          echo "new-catbox=$response" >> $GITHUB_OUTPUT
+          echo "$response"
