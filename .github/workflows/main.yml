@@ -154,20 +154,19 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
-      - name: Download core love package
-        run: |
-          url=${{ needs.build-core.outputs.core-catbox }}
+     - name: Download core love package
+       shell: cmd
+       run: |
+         set "URL=${{ needs.build-core.outputs.core-catbox }}"
 
-          # Extract the filename from the URL
-          filename=$(basename "$url")
+         for %%i in ("%URL%") do set "FILENAME=%%~nxi"
 
-          # Download the file
-          curl -L -o "$filename" "$url"
+         echo Downloading from %URL%
+         curl -L -o "%FILENAME%" "%URL%"
 
-          # Print confirmation
-          echo "Downloaded file: $filename"
+         echo Downloaded file: %FILENAME%
 
-          mv "$filename" lovefile.love
+         move "%FILENAME%" lovefile.love
       - name: Build Windows packages
         id: build-packages
         uses: love-actions/love-actions-windows@v2
@@ -179,14 +178,16 @@ jobs:
       - name: Upload to Catbox
         id: file-links
         run: |
-          filePath="${{ env.OUTPUT_FOLDER }}/${{ env.ARTIFACT_NAME }}_x86.zip"
+          set "filePath=${{ env.OUTPUT_FOLDER }}/${{ env.ARTIFACT_NAME }}_x86.zip"
 
-          response=$(curl -F "reqtype=fileupload" -F "fileToUpload=@$filePath" https://catbox.moe/user/api.php)
-          echo "old-catbox=$response" >> $GITHUB_OUTPUT
-          echo "$response"
+          echo Uploading %filePath%...
+          for /f "delims=" %%i in ('curl -s -F "reqtype=fileupload" -F "fileToUpload=@%filePath%" https://catbox.moe/user/api.php') do set "response=%%i"
+          echo old-catbox=%response% >> %GITHUB_OUTPUT%
+          echo %response%
 
-          filePath="${{ env.OUTPUT_FOLDER }}/${{ env.ARTIFACT_NAME }}_x64.zip"
+          set "filePath=${{ env.OUTPUT_FOLDER }}/${{ env.ARTIFACT_NAME }}_x64.zip"
 
-          response=$(curl -F "reqtype=fileupload" -F "fileToUpload=@$filePath" https://catbox.moe/user/api.php)
-          echo "new-catbox=$response" >> $GITHUB_OUTPUT
-          echo "$response"
+          echo Uploading %filePath%...
+          for /f "delims=" %%i in ('curl -s -F "reqtype=fileupload" -F "fileToUpload=@%filePath%" https://catbox.moe/user/api.php') do set "response=%%i"
+          echo old-catbox=%response% >> %GITHUB_OUTPUT%
+          echo %response%
