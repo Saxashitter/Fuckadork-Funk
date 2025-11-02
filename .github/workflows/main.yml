@@ -181,13 +181,13 @@ jobs:
           set "filePath=${{ env.OUTPUT_FOLDER }}/${{ env.ARTIFACT_NAME }}_x86.zip"
 
           echo Uploading %filePath%...
-          for /f "delims=" %%i in ('curl -s -F "reqtype=fileupload" -F "fileToUpload=@%filePath%" https://catbox.moe/user/api.php') do set "response=%%i"
+          for /f "delims=" %%i in ('curl -s -F ^"reqtype=fileupload^" -F ^"fileToUpload=@%filePath%^" https://catbox.moe/user/api.php') do set "response=%%i"
           echo old-catbox=%response% >> %GITHUB_OUTPUT%
           echo %response%
 
           set "filePath=${{ env.OUTPUT_FOLDER }}/${{ env.ARTIFACT_NAME }}_x64.zip"
 
           echo Uploading %filePath%...
-          for /f "delims=" %%i in ('curl -s -F "reqtype=fileupload" -F "fileToUpload=@%filePath%" https://catbox.moe/user/api.php') do set "response=%%i"
+          for /f "delims=" %%i in ('curl -s -F ^"reqtype=fileupload^" -F ^"fileToUpload=@%filePath%^" https://catbox.moe/user/api.php') do set "response=%%i"
           echo old-catbox=%response% >> %GITHUB_OUTPUT%
           echo %response%
