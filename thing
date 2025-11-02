@@ -1,0 +1,137 @@
+Perfect — yes, that’s **absolutely possible** (and in fact, the best way to do it if you plan on editing palettes externally, like in Aseprite or Photoshop).
+
+Let’s set it up so you can drop in an image like this:
+
+```
+palette.png  (width = N, height = 2)
+ ┌───────────────────────────┐
+ │ source colors (row 0)     │
+ │ target colors (row 1)     │
+ └───────────────────────────┘
+```
+
+Each column is one palette mapping pair.
+
+---
+
+## 🧠 Step 1: The shader
+
+We’ll keep the same logic — sample from row 0 for source colors, row 1 for destination colors.
+
+```glsl
+// palette_swap_texture.glsl
+uniform Image palette;
+uniform float colorCount;
+
+vec3 findClosestColor(vec3 color) {
+    float minDist = 9999.0;
+    float bestIndex = 0.0;
+
+    for (int i = 0; i < 256; i++) { // supports up to 256 colors
+        if (float(i) >= colorCount) break;
+
+        float u = (float(i) + 0.5) / colorCount;
+
+        // Row 0: source colors, Row 1: target colors
+        vec3 src = Texel(palette, vec2(u, 0.25)).rgb;
+        float dist = distance(color, src);
+        if (dist < minDist) {
+            minDist = dist;
+            bestIndex = float(i);
+        }
+    }
+
+    float uBest = (bestIndex + 0.5) / colorCount;
+    vec3 dst = Texel(palette, vec2(uBest, 0.75)).rgb;
+    return dst;
+}
+
+vec4 effect(vec4 color, Image tex, vec2 texCoord, vec2 screenCoord) {
+    vec4 pixel = Texel(tex, texCoord) * color;
+    vec3 swapped = findClosestColor(pixel.rgb);
+    return vec4(swapped, pixel.a);
+}
+```
+
+---
+
+## ⚙️ Step 2: Lua setup
+
+Now you’ll just **load the palette image** directly from a file — no need to build it in code.
+
+```lua
+function love.load()
+    sprite = love.graphics.newImage("sprite.png")
+    sprite:setFilter("nearest", "nearest")
+
+    -- Load a palette image from file (width = N colors, height = 2)
+    paletteImage = love.graphics.newImage("palette.png")
+    paletteImage:setFilter("nearest", "nearest")
+
+    -- Get the color count from its width
+    local w, h = paletteImage:getDimensions()
+
+    shader = love.graphics.newShader("palette_swap_texture.glsl")
+    shader:send("palette", paletteImage)
+    shader:send("colorCount", w)
+end
+
+function love.draw()
+    love.graphics.setShader(shader)
+    love.graphics.draw(sprite, 100, 100, 0, 4, 4)
+    love.graphics.setShader()
+end
+```
+
+---
+
+## 🧩 Step 3: Creating the palette image
+
+You can easily make this in **Aseprite**, **Photoshop**, or any pixel editor:
+
+1. Make a new image, width = number of colors, height = 2.
+2. On row 0 (top), paint your **original** colors in order.
+3. On row 1 (bottom), paint your **replacement** colors.
+
+For example:
+
+| Column | Row 0 (source) | Row 1 (target) |
+| :----: | :------------: | :------------: |
+|    0   |     #000000    |     #000000    |
+|    1   |     #FFFFFF    |     #FFD89B    |
+|    2   |     #FF0000    |     #0055FF    |
+|    3   |     #00FF00    |     #FF00FF    |
+
+→ Save as `palette.png`, make sure filtering and compression are **disabled** (nearest-neighbor, no interpolation).
+
+---
+
+## 🧠 Optional improvement: adjustable tolerance
+
+If your sprite colors have slight differences (e.g. due to compression or antialiasing), you can add a threshold to help the shader decide when two colors are “close enough.”
+
+Example tweak:
+
+```glsl
+if (dist < minDist && dist < 0.05) { // ignore if too different
+    ...
+}
+```
+
+---
+
+## 🧱 Summary
+
+✅ You can now just:
+
+* Edit your palettes visually in an image editor
+* Load them dynamically in LÖVE
+* Swap them at runtime by sending a new image:
+
+  ```lua
+  shader:send("palette", love.graphics.newImage("new_palette.png"))
+  ```
+
+---
+
+Would you like me to show how to make **multiple palettes in one texture** (so you can pick between different rows at runtime — like “player 1”, “player 2”, etc.)?

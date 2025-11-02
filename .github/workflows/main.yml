@@ -189,3 +189,16 @@ jobs:
           $response = curl -s -F "reqtype=fileupload" -F "fileToUpload=@$filePath" https://catbox.moe/user/api.php
           echo "new-catbox=$response" >> $env:GITHUB_OUTPUT
           Write-Host $response
+
+  send-files-to-discord:
+    runs-on: ubuntu-latest
+    needs: [build-core, build-windows, build-android, build-linux]
+    steps:
+      - name: Send card to Discord
+        uses: stegzilla/discord-notify@v4
+        with:
+          webhook_url: ${{ secrets.DISCORD_WEBHOOK }}
+          title: ${{ github.event.head_commit.message }}
+          message: "[Windows (32-bit)](${{ needs.build-windows.outputs.old-catbox }})\line test" # default is 
+          username: "disasterous penis" # optional, default is GitHub
+          colour: "#dd0000" # optional, default is #3371FF
