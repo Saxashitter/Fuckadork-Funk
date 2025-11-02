@@ -87,11 +87,135 @@ function Notefield:update(dt)
 
 	-- TODO: cut down the amount of lines used here
 	-- iterate through receptors
-	for r = 1, #self._receptors do
+	--[[for r = 1, #self._receptors do
 		-- iterate through every possible step within chart lane
 		for note = #self._chart[r], 1, -1 do
 			self:manageChartStep(r, note)
 		end
+	end]]
+
+	-- IDEA: our notes are an array now
+	-- the idea is to use a while to manage notes within range
+	local downscroll = Settings.get("Downscroll")
+	for r = 1, #self._receptors do
+		local i = 1
+
+		while i <= #self._chart[r] do -- iterate through notes until position of them is over screen position
+			local noteData = self._chart[r][i]
+
+			if not noteData then break end
+
+			local y = self:getWorldNotePosition(r, noteData)
+			local timing = self:getNoteMillisecondTiming(noteData)
+			local held = false
+
+			local overScreen = y >= Engine.gameHeight + Receptor.size * self:getScale() / 2
+
+			if downscroll then
+				overScreen = y <= -Receptor.size * self:getScale() / 2
+			end
+
+			if overScreen then
+				break
+			end
+
+			if not overScreen
+			and not noteData.rendered then
+				self:makeNote(r, noteData)
+			end
+
+			if self._heldNotes[r]
+			and i == self._heldNotes[r].step then
+				held = true
+				timing = timing + noteData.holdTime
+			end
+		
+			if self._bot
+			and timing <= 0 then
+				if not held then
+					self:onPress(r)
+					if noteData.holdTime <= 0 then
+						self:onRelease(r)
+					end
+				else
+					self:onRelease(r)
+				end
+		
+				break
+			elseif timing <= -self.missRange then
+				-- whoops, you missed
+				if self._char then
+					self._char.animTimer:stop()
+					self._char:play("idle")
+				end
+				if held then
+					self._heldNotes[r] = nil
+				end
+				self:removeNoteFromChart(r, i)
+				if self._missCallback then
+					self._missCallback(self, timing)
+				end
+				break
+			end
+
+			i = i + 1
+			print(i)
+		end
+	end
+end
+
+function Notefield:manageChartStep(r, step)
+	local noteData = self._chart[r][step]
+
+	-- if the note isnt valid... return
+	if not noteData then
+		return
+	end
+
+	-- iterate through each note backwards (in case of removal)
+	-- and then handle stuff like misses and spawning
+	local y = self:getWorldNotePosition(r, noteData)
+	local timing = self:getNoteMillisecondTiming(noteData)
+	local held = false
+
+	if self._heldNotes[r]
+	and step == self._heldNotes[r].step then
+		held = true
+		timing = timing + noteData.holdTime
+	end
+
+	if self._bot
+	and timing <= 0 then
+		if not held then
+			self:onPress(r)
+			if noteData.holdTime <= 0 then
+				self:onRelease(r)
+			end
+		else
+			self:onRelease(r)
+		end
+
+		return
+	elseif timing <= -self.missRange then
+		-- whoops, you missed
+		if self._char then
+			self._char.animTimer:stop()
+			self._char:play("idle")
+		end
+		if held then
+			self._heldNotes[r] = nil
+		end
+		self:removeNoteFromChart(r, step)
+		if self._missCallback then
+			self._missCallback(self, timing)
+		end
+		return
+	end
+
+	if y < Engine.gameHeight + Receptor.size * self:getScale() / 2
+	and y > -Receptor.size * self:getScale() / 2
+	and not noteData.rendered then
+		self:makeNote(r, noteData)
 	end
 end
 
@@ -304,61 +428,6 @@ function Notefield:hitNote(r, noteStep)
 	end
 
 	self:removeNoteFromChart(r, noteStep, false)
-end
-
-function Notefield:manageChartStep(r, step)
-	local noteData = self._chart[r][step]
-
-	-- if the note isnt valid... return
-	if not (noteData and noteData.valid) then
-		return
-	end
-
-	-- iterate through each note backwards (in case of removal)
-	-- and then handle stuff like misses and spawning
-	local y = self:getWorldNotePosition(r, noteData)
-	local timing = self:getNoteMillisecondTiming(noteData)
-	local held = false
-
-	if self._heldNotes[r]
-	and step == self._heldNotes[r].step then
-		held = true
-		timing = timing + noteData.holdTime
-	end
-
-	if self._bot
-	and timing <= 0 then
-		if not held then
-			self:onPress(r)
-			if noteData.holdTime <= 0 then
-				self:onRelease(r)
-			end
-		else
-			self:onRelease(r)
-		end
-
-		return
-	elseif timing <= -self.missRange then
-		-- whoops, you missed
-		if self._char then
-			self._char.animTimer:stop()
-			self._char:play("idle")
-		end
-		if held then
-			self._heldNotes[r] = nil
-		end
-		self:removeNoteFromChart(r, step)
-		if self._missCallback then
-			self._missCallback(self, timing)
-		end
-		return
-	end
-
-	if y < Engine.gameHeight + Receptor.size * self:getScale() / 2
-	and y > -Receptor.size * self:getScale() / 2
-	and not noteData.rendered then
-		self:makeNote(r, noteData)
-	end
 end
 
 function Notefield:getScrollPosition(timing, subtract)
