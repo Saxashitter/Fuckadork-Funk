@@ -32,6 +32,9 @@ jobs:
       OUTPUT_FOLDER: ./build
       RELEASE_FOLDER: ./release
     steps:
+      - name: Check file directory
+        run: |
+          ls
       - name: Build core love package
         uses: love-actions/love-actions-core@v1
         with:
