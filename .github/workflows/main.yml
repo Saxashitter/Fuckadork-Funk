@@ -55,7 +55,7 @@ jobs:
           submodules: recursive
       - name: Download core love package
         run: |
-          url=${{ needs.file-links.outputs.core-catbox }}
+          url=${{ needs.build-core.outputs.core-catbox }}
 
           # Extract the filename from the URL
           filename=$(basename "$url")
