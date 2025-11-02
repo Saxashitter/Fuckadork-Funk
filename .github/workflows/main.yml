@@ -55,7 +55,7 @@ jobs:
           submodules: recursive
       - name: Download core love package
         run: |
-          url=${{ steps.build-core.outputs.catbox }}
+          url=${{ needs.build-core.outputs.catbox }}
 
           # Extract the filename from the URL
           filename=$(basename "$url")
@@ -66,7 +66,7 @@ jobs:
           # Print confirmation
           echo "Downloaded file: $filename"
 
-          mv filename lovefile.love
+          mv "$filename" lovefile.love
       - name: Build Android packages
         id: build-packages
         uses: love-actions/love-actions-android@v2
