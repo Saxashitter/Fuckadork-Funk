@@ -178,16 +178,14 @@ jobs:
       - name: Upload to Catbox
         id: file-links
         run: |
-          set "filePath=${{ env.OUTPUT_FOLDER }}/${{ env.ARTIFACT_NAME }}_x86.zip"
+          $filePath = "${{ env.OUTPUT_FOLDER }}/${{ env.ARTIFACT_NAME }}_x86.zip"
+          Write-Host "Uploading $filePath..."
+          $response = curl -s -F "reqtype=fileupload" -F "fileToUpload=@$filePath" https://catbox.moe/user/api.php
+          echo "old-catbox=$response" >> $env:GITHUB_OUTPUT
+          Write-Host $response
 
-          echo Uploading %filePath%...
-          for /f "usebackq delims=" %%i in (`curl -s -F "reqtype=fileupload" -F "fileToUpload=@%filePath%" https://catbox.moe/user/api.php`) do set "response=%%i"
-          echo old-catbox=%response% >> %GITHUB_OUTPUT%
-          echo %response%
-
-          set "filePath=${{ env.OUTPUT_FOLDER }}/${{ env.ARTIFACT_NAME }}_x64.zip"
-
-          echo Uploading %filePath%...
-          for /f "usebackq delims=" %%i in (`curl -s -F "reqtype=fileupload" -F "fileToUpload=@%filePath%" https://catbox.moe/user/api.php`) do set "response=%%i"
-          echo old-catbox=%response% >> %GITHUB_OUTPUT%
-          echo %response%
+          $filePath = "${{ env.OUTPUT_FOLDER }}/${{ env.ARTIFACT_NAME }}_x64.zip"
+          Write-Host "Uploading $filePath..."
+          $response = curl -s -F "reqtype=fileupload" -F "fileToUpload=@$filePath" https://catbox.moe/user/api.php
+          echo "new-catbox=$response" >> $env:GITHUB_OUTPUT
+          Write-Host $response
