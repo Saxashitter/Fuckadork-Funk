@@ -92,6 +92,7 @@ jobs:
           bundle-id: ${{ env.BUNDLE_ID }}
           description: alpha
           version-string: "1.0"
+          icon-path: ${{ env.BUILD_ASSETS_FOLDER }}/icon.png
           love-package: ${{ env.ARTIFACT_NAME }}-core.love
           product-name: ${{ env.ARTIFACT_NAME }}
           output-folder: ${{ env.OUTPUT_FOLDER }}
