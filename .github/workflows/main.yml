@@ -126,8 +126,8 @@ jobs:
       OUTPUT_FOLDER: ./build
       RELEASE_FOLDER: ./release
     outputs:
-      32bit-catbox: ${{ steps.build-windows.outputs.32bit-catbox }}
-      64bit-catbox: ${{ steps.build-windows.outputs.64bit-catbox }}
+      old-catbox: ${{ steps.build-windows.outputs.old-catbox }}
+      new-catbox: ${{ steps.build-windows.outputs.new-catbox }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -149,12 +149,12 @@ jobs:
           filePath="${{ env.OUTPUT_FOLDER }}/${{ env.ARTIFACT_NAME }}_x86.zip"
 
           curl -F "reqtype=fileupload" -F "fileToUpload=@$filePath" https://catbox.moe/user/api.php >> upload1.txt
-          echo "debian-catbox=$(cat upload1.txt)" >> $GITHUB_OUTPUT
+          echo "old-catbox=$(cat upload1.txt)" >> $GITHUB_OUTPUT
           cat upload1.txt
       - name: Upload 64-bit to Catbox
         run: |
           filePath="${{ env.OUTPUT_FOLDER }}/${{ env.ARTIFACT_NAME }}_x64.zip"
 
           curl -F "reqtype=fileupload" -F "fileToUpload=@$filePath" https://catbox.moe/user/api.php >> upload2.txt
-          echo "debian-catbox=$(cat upload2.txt)" >> $GITHUB_OUTPUT
+          echo "new-catbox=$(cat upload2.txt)" >> $GITHUB_OUTPUT
           cat upload2.txt
