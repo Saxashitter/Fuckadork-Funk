@@ -94,8 +94,8 @@ jobs:
       OUTPUT_FOLDER: ./build
       RELEASE_FOLDER: ./release
     outputs:
-      appimage-catbox: ${{ steps.build-linux.outputs.appimage-catbox }}
-      debian-catbox: ${{ steps.build-linux.outputs.debian-catbox }}
+      appimage-catbox: ${{ steps.file-links.outputs.appimage-catbox }}
+      debian-catbox: ${{ steps.file-links.outputs.debian-catbox }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -148,8 +148,8 @@ jobs:
       OUTPUT_FOLDER: ./build
       RELEASE_FOLDER: ./release
     outputs:
-      old-catbox: ${{ steps.build-windows.outputs.old-catbox }}
-      new-catbox: ${{ steps.build-windows.outputs.new-catbox }}
+      old-catbox: ${{ steps.file-links.outputs.old-catbox }}
+      new-catbox: ${{ steps.file-links.outputs.new-catbox }}
     steps:
       - uses: actions/checkout@v4
         with:
