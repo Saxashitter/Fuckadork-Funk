@@ -521,9 +521,6 @@ function Chip.init(settings)
             end
             love.filesystem.mountFullPath(sourceBaseDir, "")
         end
-        if love.filesystem.getInfo("icon.png", "file") then
-            window.setIcon(love.image.newImageData("icon.png"))
-        end
 
         if settings.initialScene == nil then
             settings.initialScene = Scene:new()

@@ -23,7 +23,8 @@ end
 function UIButton:onRelease() end
 
 function UIButton:input(event)
-	if not event:is(InputEventTouch) then
+	if not event:is(InputEventTouch)
+	and not (event:is(InputEventMouseButton) and event:getButton() == "left") then
 		return
 	end
 

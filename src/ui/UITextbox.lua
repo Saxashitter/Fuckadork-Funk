@@ -36,7 +36,8 @@ function UIButton:input(event)
 		return
 	end
 
-	if not event:is(InputEventTouch) then
+	if not event:is(InputEventTouch)
+	and not (event:is(InputEventMouseButton) and event:getButton() == "left") then
 		return
 	end
 

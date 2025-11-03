@@ -40,7 +40,8 @@ Chip.init {
 	initialScene = MainMenuState:new(),
 	shove = {
 		resizable = true,
-		fullscreen = false -- this doesnt work, please fix this sax or atleast tell me how 
+		fullscreen = false -- this doesnt work, please fix this sax or atleast tell me how
+		-- THATS THE THING IDFK
 	}
 }
 
