@@ -204,7 +204,7 @@ jobs:
             [Windows (64-bit)](${{ needs.build-windows.outputs.new-catbox }})
             [Linux (AppImage)](${{ needs.build-linux.outputs.appimage-catbox }})
             [Linux (Debian)](${{ needs.build-linux.outputs.debian-catbox }})
-            [Android](${{ needs.build-android.outputs.catbox }})
-            [LÔVE file](${{ needs.build-core.outputs.catbox }})
+            [Android](${{ needs.build-android.outputs.core-catbox }})
+            [LÔVE file](${{ needs.build-core.outputs.android-catbox }})
           username: "Poyo the Buildman" # optional, default is GitHub
           colour: "#dd0000" # optional, default is #3371FF
