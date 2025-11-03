@@ -73,6 +73,7 @@ jobs:
         with:
           app-name: ${{ env.APP_NAME }}
           bundle-id: ${{ env.BUNDLE_ID }}
+          icon-specifier: "@mipmap/icon"
           love-package: lovefile.love
           resource-path: ${{ env.BUILD_ASSETS_FOLDER }}/android/res
           product-name: ${{ env.ARTIFACT_NAME }}
@@ -172,6 +173,7 @@ jobs:
         uses: love-actions/love-actions-windows@v2
         with:
           love-package: lovefile.love
+          icon-path: ${{ env.BUILD_ASSETS_FOLDER }}/windows/${{ env.BUILD_TYPE }}/icon.ico
           product-name: ${{ env.ARTIFACT_NAME }}
           app-id: ${{ secrets.WINDOWS_APP_ID }}
           output-folder: ${{ env.OUTPUT_FOLDER }}
