@@ -19,8 +19,9 @@ end
 
 function RhythmAudio:addSource(songName, file)
 	local song = AudioPlayer:new()
-
+	song:setType("stream")
 	song:load(self.path:format(songName, file))
+
 	table.insert(self._songs, song)
 	self:add(song)
 end

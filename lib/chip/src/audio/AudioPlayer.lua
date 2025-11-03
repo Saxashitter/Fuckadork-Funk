@@ -55,7 +55,12 @@ function AudioPlayer:constructor()
     ---
     self._maxPolyphony = 1 --- @type integer
 
-        ---
+	---
+	--- @protected
+    ---
+	self._audType = "static"
+
+    ---
     --- @protected
     ---
     self._stream = nil --- @type chip.audio.AudioStream
@@ -143,6 +148,10 @@ function AudioPlayer:constructor()
     Engine.onFocusGained:connect(self._onFocusGained)
 end
 
+function AudioPlayer:setType(audType)
+	self._audType = type(audType) == "string" and audType or "static"
+end
+
 ---
 --- Loads an audio stream into this player.
 ---
@@ -161,7 +170,7 @@ function AudioPlayer:load(data)
     if self._stream then
         self._stream:unreference()
     end
-    self._stream = Assets.getAudioStream(data)
+    self._stream = Assets.getAudioStream(data, self._audType)
     self._stream:reference()
     
     local masterBus = AudioBus.master

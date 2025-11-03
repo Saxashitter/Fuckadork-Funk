@@ -83,13 +83,20 @@ end
 --- @param  path  string
 --- @return chip.audio.AudioStream
 ---
-function Assets.getAudioStream(path)
+function Assets.getAudioStream(path, audType)
     if type(path) ~= "string" then
         return path
     end
-    if Assets._audioStreamCache[path] == nil then
+    if type(audType) ~= "string" then
+    	audType = "static"
+    end
+   
+    if Assets._audioStreamCache[audType] == nil then
+    	Assets._audioStreamCache[audType] = {}
+    end
+    if Assets._audioStreamCache[audType][path] == nil then
         local newStream = AudioStream:new() --- @type chip.audio.AudioStream
-        newStream:setData(love.audio.newSource(path, "static"))
+        newStream:setData(love.audio.newSource(path, audType))
         Assets._audioStreamCache[path] = newStream
     end
     return Assets._audioStreamCache[path]
