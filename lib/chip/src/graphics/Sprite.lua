@@ -107,6 +107,11 @@ function Sprite:constructor(x, y)
     ---
     self.origin = Point:new(0, 0) --- @type chip.math.Point
 
+	---
+	--- The X and Y skew/shearing factor of this sprite.
+	---
+	self.skew = Point:new(0, 0)
+
     ---
     --- Controls how much this sprite can scroll on a camera.
     ---
@@ -502,6 +507,8 @@ function Sprite:getRenderingInfo(trans)
         end
         local sx = self.scale.x
         local sy = self.scale.y
+        local skx = self.skew.x
+        local sky = self.skew.y
     
         if not isOnCanvasLayer then
             local cam = Camera.currentCamera
@@ -542,6 +549,7 @@ function Sprite:getRenderingInfo(trans)
 
         trans:scale(abs(sx), abs(sy))
         trans:rotate(self._rotation)
+        trans:shear(skx, sky)
         trans:translate(-ofx2, -ofy2)
         trans:translate(
             -(frame.offset.x * (sx < 0.0 and -1 or 1) * (self.flipX and -1 or 1)),

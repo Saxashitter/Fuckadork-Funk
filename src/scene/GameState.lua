@@ -40,6 +40,24 @@ function GameState:constructor(...)
 		yOffset = Engine.gameHeight - yOffset
 	end
 
+	local function getNotesInSection(self, i)
+		local notes = 0
+		local time = self.song:beatToTime(4)
+		local curTime = self.song:getTime()
+
+		for r = 1,4 do
+			for _, note in ipairs(self.chart.notes[i][r]) do
+				if note.position > (curTime+time)*1000 then
+					return notes
+				end
+	
+				notes = notes + 1
+			end
+		end
+	
+		return notes
+	end
+
 	self.song:addSource(self.currentSong, "Inst")
 	if self.chart.vocals then
 		self.song:addSource(self.currentSong, "funkin/Voices")
@@ -49,6 +67,7 @@ function GameState:constructor(...)
 	self.song:setFinishCallback(function()
 		Engine.switchScene(SongsState:new())
 	end)
+
 	self.song:setBeatCallback(function(beat)
 		if beat % 2 > 1 then return end
 
@@ -59,34 +78,15 @@ function GameState:constructor(...)
 			self.left:play("idle")
 		end
 	end)
+
 	self.song:setSectionCallback(function()
 		local step = math.floor(self.song:getCurStep())
 
-		local leftNotes = 0
-		local rightNotes = 0
-
-		for r = 1, 4 do
-			if self.chart.notes[1][r] then
-				for i = step, step+16 do
-					if self.chart.notes[1][r][i]
-					and self.chart.notes[1][r][i].valid then
-						leftNotes = leftNotes+1
-					end
-				end
-			end
-		end
-		for r = 1, 4 do
-			if self.chart.notes[2][r] then
-				for i = step, step+16 do
-					if self.chart.notes[2][r][i]
-					and self.chart.notes[2][r][i].valid then
-						rightNotes = rightNotes+1
-					end
-				end
-			end
-		end
+		local leftNotes = getNotesInSection(self, 1)
+		local rightNotes = getNotesInSection(self, 2)
 
 		local t = Tween:new()
+		-- TODO: make chart "editor" to make events and camera switches
 
 		if rightNotes > leftNotes then
 			t:tweenProperty(self.camera, "_x", self.right:getCamX(), 0.6, Ease.quintInOut)
