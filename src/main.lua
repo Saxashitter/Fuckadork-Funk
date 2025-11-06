@@ -1,3 +1,4 @@
+g3d = require("lib.g3d")
 Chip = require("lib.chip")
 shove = require("lib.shove.shove")
 
