@@ -19,7 +19,7 @@ function GameState:constructor(...)
 		self.currentMode,
 		self.background.leftSide.x,
 		self.background.leftSide.y)
-	self.right = Character:new("bf",
+	self.right = Character:new("poyo",
 		self.currentMode,
 		self.background.rightSide.x,
 		self.background.rightSide.y)

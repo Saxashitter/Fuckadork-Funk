@@ -53,7 +53,7 @@ function MenuState:addItem(name, item)
 end
 
 function MenuState:setSelection(i)
-	AudioPlayer.playSFX("assets/sounds/boop.ogg")
+	AudioPlayer.playSFX("assets/sounds/boop.ogg") --hell yeah
 	self.selection = i
 
 	for k, v in ipairs(self.items) do
@@ -99,6 +99,11 @@ function MenuState:input(event)
 	if table.contains(KeyBinds.accept, event:getScanCode()) then
 		AudioPlayer.playSFX("assets/sounds/boop.ogg")
 		self:selected(self.items[self.selection].item)
+	end
+
+	if table.contains(KeyBinds.back, event:getScanCode()) then
+		self:backPressed()
+		--AudioPlayer.playSFX("assets/sounds/boop.ogg")
 	end
 end
 
