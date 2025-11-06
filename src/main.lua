@@ -1,6 +1,5 @@
 Chip = require("lib.chip")
 shove = require("lib.shove.shove")
-g3d = require("lib.g3d")
 
 KeyBinds = { --turns out this is for menus so these are not used in game
 	left = {"a", "left"},
@@ -18,7 +17,7 @@ local function recursiveRequire(folder)
 	for _, item in ipairs(items) do
 		local path = folder .. "/" .. item
 		
-		if love.filesystem.isDirectory(path) then
+		if love.filesystem.getInfo(path, "directory") then
 			recursiveRequire(path)
 		elseif item:match("%.lua$") then
 			_G[item:gsub("%.lua$", "")] = require(path:gsub("%.lua$", ""):gsub("/", "."))
