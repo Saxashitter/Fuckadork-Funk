@@ -22,7 +22,7 @@ function TestState:init()
 	self.lightGraphic:makeSolid(32, 32, Color.YELLOW)
 	self.lightGraphic.origin = Point:new(0.5, 0.5)
 
-	self.right = Character:new("bf", "funk", x, y)
+	self.right = Character:new("poyo", "funk", x, y)
 	self.right:setY(self.right:getY() + self.right:getHeight()/2)
 
 	self.shadow = Shadow:new(self.right, self.light)
@@ -37,8 +37,11 @@ end
 function TestState:update(dt)
 	self.tmr = self.tmr + dt
 
-	self.light:setX(Engine.gameWidth/2 + (self.right:getWidth()*1.25) * math.cos(self.tmr))
-	self.light:setY(Engine.gameHeight/2 + (self.right:getHeight()*1.25) * math.sin(self.tmr))
+	--self.light:setX(Engine.gameWidth/2 + (self.right:getWidth()*1.25) * math.cos(self.tmr))
+	--self.light:setY(Engine.gameHeight/2 + (self.right:getHeight()*1.25) * math.sin(self.tmr))
+	self.light:setX(love.mouse.getX() - 350)
+	self.light:setY(love.mouse.getY() - 350)
+	-- there isnt a good way to do this for some reason, or maybe there is i just dont know how LOL
 
 	self.lightGraphic:setX(self.light:getX())
 	self.lightGraphic:setY(self.light:getY())
