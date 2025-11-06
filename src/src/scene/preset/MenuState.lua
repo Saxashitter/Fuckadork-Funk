@@ -103,7 +103,7 @@ function MenuState:input(event)
 
 	if table.contains(KeyBinds.back, event:getScanCode()) then
 		self:backPressed()
-		--AudioPlayer.playSFX("assets/sounds/boop.ogg")
+		AudioPlayer.playSFX("assets/sounds/boop.ogg")
 	end
 end
 
