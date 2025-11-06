@@ -1,44 +1,44 @@
 {
-	"displayName": "Boyfriend",
-	"shortDescription": "The beep-bo-bopper.",
-	"longDescription": "Long ago, there were four nations... yea no fuck you im not explaining",
+	"displayName": "PTP Poyo",
+	"shortDescription": "Probably the best (sprite) so far",
+	"longDescription": "Yeah whoever made this was definitely way too overqualified at the time",
 	"selectable": true,
-	"flip": true,
+	"flip": false,
 	"color": "1eadff",
 	"origin": [0.55, 0.92],
 	"camera": [0, -300],
 	"animations": {
 		"funk": {
 			"idle": {
-				"prefix":"BF idle dance",
+				"prefix":"poyo_boppin",
 				"fps":24,
 				"loop":false,
 				"x":0,
 				"y":0
 			},
 			"leftHit": {
-				"prefix":"BF NOTE LEFT0",
+				"prefix":"poyo_left",
 				"fps":24,
 				"loop":false,
 				"x":22,
 				"y":-20
 			},
 			"downHit": {
-				"prefix":"BF NOTE DOWN0",
+				"prefix":"poyo_down",
 				"fps":24,
 				"loop":false,
 				"x":0,
 				"y":-17
 			},
 			"upHit": {
-				"prefix":"BF NOTE UP0",
+				"prefix":"poyo_up",
 				"fps":24,
 				"loop":false,
 				"x":-16,
 				"y":-19
 			},
 			"rightHit": {
-				"prefix":"BF NOTE RIGHT0",
+				"prefix":"poyo_right",
 				"fps":24,
 				"loop":false,
 				"x":-45,
