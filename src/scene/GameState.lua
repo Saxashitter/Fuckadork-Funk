@@ -197,10 +197,10 @@ function GameState:init(songName)
 	self:add(self.song)
 
 	self:add(self.background)
+	self.background:addObjects()
 	self:add(self.left)
 	self:add(self.right)
 
-	self:add(self.line, self.HUDcamera)
 	self:add(self.strumlineBG, self.HUDcamera)
 	self:add(self.playerField, self.HUDcamera)
 	self:add(self.botField, self.HUDcamera)

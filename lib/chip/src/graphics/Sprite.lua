@@ -429,11 +429,18 @@ function Sprite:update(dt)
 end
 
 function Sprite:isOnScreen()
+	local camera = Camera.currentCamera
+	local zoom = camera and camera:getZoom() or 1
+
     local rect = self._rect
     local rx, ry, rw, rh = rect.x, rect.y, rect.width, rect.height
+
+	local ox = -(Engine.gameWidth - (Engine.gameWidth*zoom))/2
+	local oy = -(Engine.gameHeight - (Engine.gameHeight*zoom))/2
+
     return (
-        (rx + rw) > 0 and rx < Engine.gameWidth and
-        (ry + rh) > 0 and ry < Engine.gameHeight
+        (rx + rw) > ox and rx < Engine.gameWidth-ox and
+        (ry + rh) > oy and ry < Engine.gameHeight-oy
     )
 end
 
@@ -510,6 +517,10 @@ function Sprite:getRenderingInfo(trans)
         local skx = self.skew.x
         local sky = self.skew.y
     
+    	if sy < 0 then
+    		skx = skx * -1
+    	end
+    
         if not isOnCanvasLayer then
             local cam = Camera.currentCamera
             --[[if cam then
@@ -541,10 +552,9 @@ function Sprite:getRenderingInfo(trans)
 
 		local cam = Camera.currentCamera
 		if not isOnCanvasLayer and cam then
-			local scrollX = (cam:getX() - Engine.gameWidth*0.5)
-			local scrollY = (cam:getY() - Engine.gameHeight*0.5)
-				
-			trans:translate(scrollX * (1-self.scrollFactor.x), scrollY * (1-self.scrollFactor.y))
+			-- TODO: fix scrollfactor code
+			local camX, camY = cam:getX(), cam:getY()
+			trans:translate(camX * (1 - self.scrollFactor.x), camY * (1 - self.scrollFactor.y))
 		end
 
         trans:scale(abs(sx), abs(sy))
