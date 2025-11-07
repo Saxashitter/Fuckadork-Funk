@@ -1,0 +1,57 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TextureAtlas imagePath="placeholderGuy.png">
+	<!-- Created with Adobe Animate version 19.2.0.405 -->
+	<!-- http://www.adobe.com/products/animate.html -->
+	<SubTexture name="doubleJump0000" x="236" y="0" width="102" height="231" frameX="-10" frameY="0" frameWidth="115" frameHeight="231"/>
+	<SubTexture name="doubleJump0001" x="236" y="0" width="102" height="231" frameX="-10" frameY="0" frameWidth="115" frameHeight="231"/>
+	<SubTexture name="doubleJump0002" x="121" y="0" width="115" height="207" frameX="0" frameY="-20" frameWidth="115" frameHeight="231"/>
+	<SubTexture name="doubleJump0003" x="121" y="0" width="115" height="207" frameX="0" frameY="-20" frameWidth="115" frameHeight="231"/>
+	<SubTexture name="doubleJump0004" x="121" y="0" width="115" height="207" frameX="0" frameY="-20" frameWidth="115" frameHeight="231"/>
+	<SubTexture name="doubleJump0005" x="121" y="0" width="115" height="207" frameX="0" frameY="-20" frameWidth="115" frameHeight="231"/>
+	<SubTexture name="falling0000" x="223" y="231" width="91" height="137"/>
+	<SubTexture name="falling0001" x="223" y="231" width="91" height="137"/>
+	<SubTexture name="falling0002" x="223" y="231" width="91" height="137"/>
+	<SubTexture name="falling0003" x="83" y="573" width="91" height="136" frameX="0" frameY="0" frameWidth="91" frameHeight="137"/>
+	<SubTexture name="falling0004" x="83" y="573" width="91" height="136" frameX="0" frameY="0" frameWidth="91" frameHeight="137"/>
+	<SubTexture name="falling0005" x="83" y="573" width="91" height="136" frameX="0" frameY="0" frameWidth="91" frameHeight="137"/>
+	<SubTexture name="falling0006" x="288" y="559" width="91" height="137"/>
+	<SubTexture name="falling0007" x="288" y="559" width="91" height="137"/>
+	<SubTexture name="falling0008" x="288" y="559" width="91" height="137"/>
+	<SubTexture name="idle0000" x="338" y="189" width="112" height="190"/>
+	<SubTexture name="idle0001" x="338" y="189" width="112" height="190"/>
+	<SubTexture name="idle0002" x="338" y="189" width="112" height="190"/>
+	<SubTexture name="idle0003" x="112" y="207" width="111" height="189" frameX="0" frameY="0" frameWidth="112" frameHeight="190"/>
+	<SubTexture name="idle0004" x="112" y="207" width="111" height="189" frameX="0" frameY="0" frameWidth="112" frameHeight="190"/>
+	<SubTexture name="idle0005" x="112" y="207" width="111" height="189" frameX="0" frameY="0" frameWidth="112" frameHeight="190"/>
+	<SubTexture name="idle0006" x="0" y="207" width="112" height="190"/>
+	<SubTexture name="idle0007" x="0" y="207" width="112" height="190"/>
+	<SubTexture name="idle0008" x="0" y="207" width="112" height="190"/>
+	<SubTexture name="jump0000" x="0" y="0" width="121" height="207" frameX="0" frameY="0" frameWidth="128" frameHeight="207"/>
+	<SubTexture name="jump0001" x="0" y="0" width="121" height="207" frameX="0" frameY="0" frameWidth="128" frameHeight="207"/>
+	<SubTexture name="jump0002" x="338" y="0" width="119" height="189" frameX="-9" frameY="0" frameWidth="128" frameHeight="207"/>
+	<SubTexture name="jump0003" x="338" y="0" width="119" height="189" frameX="-9" frameY="0" frameWidth="128" frameHeight="207"/>
+	<SubTexture name="jump0004" x="338" y="0" width="119" height="189" frameX="-9" frameY="0" frameWidth="128" frameHeight="207"/>
+	<SubTexture name="jump0005" x="338" y="0" width="119" height="189" frameX="-9" frameY="0" frameWidth="128" frameHeight="207"/>
+	<SubTexture name="run0000" x="223" y="379" width="131" height="144" frameX="0" frameY="0" frameWidth="131" frameHeight="149"/>
+	<SubTexture name="run0001" x="223" y="379" width="131" height="144" frameX="0" frameY="0" frameWidth="131" frameHeight="149"/>
+	<SubTexture name="run0002" x="379" y="559" width="96" height="129" frameX="-17" frameY="-18" frameWidth="131" frameHeight="149"/>
+	<SubTexture name="run0003" x="379" y="559" width="96" height="129" frameX="-17" frameY="-18" frameWidth="131" frameHeight="149"/>
+	<SubTexture name="run0004" x="0" y="397" width="118" height="144" frameX="-6" frameY="-3" frameWidth="131" frameHeight="149"/>
+	<SubTexture name="run0005" x="0" y="397" width="118" height="144" frameX="-6" frameY="-3" frameWidth="131" frameHeight="149"/>
+	<SubTexture name="run0006" x="174" y="686" width="92" height="127" frameX="-31" frameY="-22" frameWidth="131" frameHeight="149"/>
+	<SubTexture name="run0007" x="174" y="686" width="92" height="127" frameX="-31" frameY="-22" frameWidth="131" frameHeight="149"/>
+	<SubTexture name="walk0000" x="118" y="396" width="88" height="177" frameX="0" frameY="0" frameWidth="98" frameHeight="180"/>
+	<SubTexture name="walk0001" x="118" y="396" width="88" height="177" frameX="0" frameY="0" frameWidth="98" frameHeight="180"/>
+	<SubTexture name="walk0002" x="118" y="396" width="88" height="177" frameX="0" frameY="0" frameWidth="98" frameHeight="180"/>
+	<SubTexture name="walk0003" x="118" y="396" width="88" height="177" frameX="0" frameY="0" frameWidth="98" frameHeight="180"/>
+	<SubTexture name="walk0004" x="206" y="523" width="82" height="163" frameX="-12" frameY="-14" frameWidth="98" frameHeight="180"/>
+	<SubTexture name="walk0005" x="206" y="523" width="82" height="163" frameX="-12" frameY="-14" frameWidth="98" frameHeight="180"/>
+	<SubTexture name="walk0006" x="206" y="523" width="82" height="163" frameX="-12" frameY="-14" frameWidth="98" frameHeight="180"/>
+	<SubTexture name="walk0007" x="354" y="379" width="95" height="180" frameX="0" frameY="0" frameWidth="98" frameHeight="180"/>
+	<SubTexture name="walk0008" x="354" y="379" width="95" height="180" frameX="0" frameY="0" frameWidth="98" frameHeight="180"/>
+	<SubTexture name="walk0009" x="354" y="379" width="95" height="180" frameX="0" frameY="0" frameWidth="98" frameHeight="180"/>
+	<SubTexture name="walk0010" x="354" y="379" width="95" height="180" frameX="0" frameY="0" frameWidth="98" frameHeight="180"/>
+	<SubTexture name="walk0011" x="0" y="541" width="83" height="161" frameX="-15" frameY="-19" frameWidth="98" frameHeight="180"/>
+	<SubTexture name="walk0012" x="0" y="541" width="83" height="161" frameX="-15" frameY="-19" frameWidth="98" frameHeight="180"/>
+	<SubTexture name="walk0013" x="0" y="541" width="83" height="161" frameX="-15" frameY="-19" frameWidth="98" frameHeight="180"/>
+</TextureAtlas>

@@ -37,14 +37,17 @@ Chip.init {
 	noBorders = false,
 	targetFPS = 0,
 	physicsPerFrame = 4,
-	--initialScene = TestState:new(),
-	initialScene = MainMenuState:new(),
+	initialScene = ModelTestState:new(),
 	shove = { -- shove is def causing issues, will lookinto this later on.
 		resizable = true,
 		fullscreen = false -- this doesnt work, please fix this sax or atleast tell me how
 		-- THATS THE THING IDFK
 	}
 }
+
+Engine.onWindowResize:connect(function(w, h)
+	g3d.camera.aspectRatio = 1280/720
+end)
 
 Console.init()
 print = Console.print

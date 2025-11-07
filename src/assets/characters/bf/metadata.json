@@ -46,6 +46,36 @@
 			}
 		},
 		"taiko": {},
-		"dancepad": {}
+		"dancepad": {},
+		"platformer": {
+			"idle": {
+				"prefix":"idle",
+				"fps":24,
+				"loop":false,
+				"x":0,
+				"y":0
+			},
+			"walk": {
+				"prefix":"walk",
+				"fps":24,
+				"loop":false,
+				"x":0,
+				"y":0
+			},
+			"run": {
+				"prefix":"run",
+				"fps":24,
+				"loop":false,
+				"x":0,
+				"y":0
+			},
+			"jump": {
+				"prefix":"jump",
+				"fps":24,
+				"loop":false,
+				"x":0,
+				"y":0
+			},
+		}
 	}
 }
