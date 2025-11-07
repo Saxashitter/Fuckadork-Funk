@@ -38,8 +38,8 @@ Chip.init {
 	noBorders = false,
 	targetFPS = 0,
 	physicsPerFrame = 4,
-	initialScene = TestState:new(),
-	--initialScene = MainMenuState:new(),
+	--initialScene = TestState:new(),
+	initialScene = MainMenuState:new(),
 	shove = { -- shove is def causing issues, will lookinto this later on.
 		resizable = true,
 		fullscreen = false -- this doesnt work, please fix this sax or atleast tell me how
