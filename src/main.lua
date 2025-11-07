@@ -1,3 +1,4 @@
+g3d = require("lib.g3d")
 Chip = require("lib.chip")
 shove = require("lib.shove.shove")
 g3d = require("lib.g3d")
@@ -45,6 +46,10 @@ Chip.init {
 		-- THATS THE THING IDFK
 	}
 }
+
+Engine.onWindowResize:connect(function(w, h)
+	g3d.camera.aspectRatio = 1280/720
+end)
 
 Console.init()
 print = Console.print

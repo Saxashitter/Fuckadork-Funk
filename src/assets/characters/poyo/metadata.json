@@ -5,7 +5,7 @@
 	"selectable": true,
 	"flip": false,
 	"color": "1eadff",
-	"origin": [0.47, 0.90],
+	"origin": [0.47, 0.98],
 	"camera": [0, -300],
 	"animations": {
 		"funk": {

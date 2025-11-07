@@ -39,16 +39,28 @@ function TestState:update(dt)
 
 	--self.light:setX(Engine.gameWidth/2 + (self.right:getWidth()*1.25) * math.cos(self.tmr))
 	--self.light:setY(Engine.gameHeight/2 + (self.right:getHeight()*1.25) * math.sin(self.tmr))
-	self.light:setX(love.mouse.getX() - 350)
-	self.light:setY(love.mouse.getY() - 350)
+	-- self.light:setX(love.mouse.getX() - 350)
+	-- self.light:setY(love.mouse.getY() - 350)
 	-- there isnt a good way to do this for some reason, or maybe there is i just dont know how LOL
-
-	self.lightGraphic:setX(self.light:getX())
-	self.lightGraphic:setY(self.light:getY())
+	-- actually there IS stupid
 
 	--self.right.skew.x = math.cos(self.tmr) * 0.4
 	--self.right.scale.y = 1 + math.sin(self.tmr*2) * 0.25
 	self.super.update(self, dt)
+end
+
+function TestState:input(event)
+	if not event:is(InputEventMouseMotion) then
+		return
+	end
+
+	local x, y = self.camera:screenToCamera(event:getX(), event:getY())
+
+	self.light:setX(x)
+	self.light:setY(y)
+
+	self.lightGraphic:setX(self.light:getX())
+	self.lightGraphic:setY(self.light:getY())
 end
 
 return TestState

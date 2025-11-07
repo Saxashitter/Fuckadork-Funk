@@ -192,6 +192,18 @@ function Camera:pop()
 	love.graphics.setScissor(unpack(self._drawData))
 end
 
+function Camera:screenToCamera(x, y)
+    local zoom = self:getZoom()
+
+    local cx, cy = Engine.gameWidth * 0.5, Engine.gameHeight * 0.5
+
+    local dx = (x - cx) / zoom
+    local dy = (y - cy) / zoom
+
+    return self:getX() + dx, self:getY() + dy
+end
+
+
 function Camera:makeCurrent()
     Camera.currentCamera = self
 end
