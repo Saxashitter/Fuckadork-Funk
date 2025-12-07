@@ -105,6 +105,8 @@ end
 function Note:free()
 	if self._hitTween then
 		self._hitTween:stop()
+	end
+	if self._hitDelay then
 		self._hitDelay:stop()
 	end
 

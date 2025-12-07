@@ -1,6 +1,21 @@
-local TestState = Scene:extend("TestState", ...)
+local ShadowTestState = Scene:extend("ShadowTestState", ...)
 
-function TestState:init()
+local anims = {
+	"leftHit",
+}
+local curAnim = 1
+local char
+
+local function timeLoop()
+	char:play(anims[curAnim])
+	curAnim = curAnim + 1
+	if curAnim > #anims then
+		curAnim = 1
+	end
+	Timer:new():start(1, timeLoop)
+end
+
+function ShadowTestState:init()
 	self.super.init(self)
 
 	self.tmr = 0
@@ -26,15 +41,18 @@ function TestState:init()
 	self.right:setY(self.right:getY() + self.right:getHeight()/2)
 
 	self.shadow = Shadow:new(self.right, self.light)
+	self.shadow.__special = true
 
 	self:add(self.shadow)
 	self:add(self.light)
 	self:add(self.lightGraphic)
 	self:add(self.right)
 
+	char = self.right
+	timeLoop()
 end
 
-function TestState:update(dt)
+function ShadowTestState:update(dt)
 	self.tmr = self.tmr + dt
 
 	--self.light:setX(Engine.gameWidth/2 + (self.right:getWidth()*1.25) * math.cos(self.tmr))
@@ -44,12 +62,10 @@ function TestState:update(dt)
 	-- there isnt a good way to do this for some reason, or maybe there is i just dont know how LOL
 	-- actually there IS stupid
 
-	--self.right.skew.x = math.cos(self.tmr) * 0.4
-	--self.right.scale.y = 1 + math.sin(self.tmr*2) * 0.25
 	self.super.update(self, dt)
 end
 
-function TestState:input(event)
+function ShadowTestState:input(event)
 	if not event:is(InputEventMouseMotion) then
 		return
 	end
@@ -63,4 +79,4 @@ function TestState:input(event)
 	self.lightGraphic:setY(self.light:getY())
 end
 
-return TestState
+return ShadowTestState

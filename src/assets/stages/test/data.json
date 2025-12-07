@@ -1,26 +1,26 @@
 {
 	"zoom": 0.8,
-	"rightSide": [100, 0],
-	"leftSide": [-100, 0],
+	"rightSide": [0, 0],
+	"leftSide": [-5000, 0],
 	"speaker": [0, 0],
 	"shadows": false,
 	"sprites": [
 		{
 			"key": "background",
 			"type": "solid",
-			"position": [0, 0],
-			"dimensions": [1280, 720],
+			"position": [640, 360],
+			"dimensions": [4000, 4000],
 			"color": 0xFFFFFFFF,
 			"scale": [1, 1],
-			"origin": [0,0],
+			"origin": [0.5,0.5],
 			"scrollFactor": [0, 0],
 			"rotation": 0
 		},
 		{
 			"key": "floor",
 			"type": "solid",
-			"position": [0, 0],
-			"dimensions": [1280, 360],
+			"position": [0, 200],
+			"dimensions": [4000, 400],
 			"color": 0xFF808080,
 			"scale": [1, 1],
 			"origin": [0.5,0],

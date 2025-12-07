@@ -438,6 +438,9 @@ function Sprite:isOnScreen()
 	local ox = -(Engine.gameWidth - (Engine.gameWidth*zoom))/2
 	local oy = -(Engine.gameHeight - (Engine.gameHeight*zoom))/2
 
+    ox = ox + camera:getX() - Engine.gameWidth/2
+    oy = oy + camera:getY() - Engine.gameHeight/2
+
     return (
         (rx + rw) > ox and rx < Engine.gameWidth-ox and
         (ry + rh) > oy and ry < Engine.gameHeight-oy
@@ -494,7 +497,11 @@ function Sprite:getRenderingInfo(trans)
         
         local offx = ((curAnim and curAnim.offset.x or 0.0) - self.frameOffset.x) * (self.flipX and -1 or 1)
         local offy = ((curAnim and curAnim.offset.y or 0.0) - self.frameOffset.y) * (self.flipY and -1 or 1)
-    
+
+        if self.__special then
+            print(offx, offy)
+        end
+
         local p = self._parent
     
         local canvases = {} --- @type table<chip.graphics.CanvasLayer>
