@@ -232,6 +232,11 @@ function GameState:input(event)
 	if not event:is(InputEventKey) then return end
 	if event:isRepeating() then return end
 
+	if event:getScanCode() == "escape" then
+		print("ok bye")
+		Engine.switchScene(MainMenuState:new())
+	end
+
 	local contains, key = table.contains(self.keyBinds, event:getScanCode())
 
 	if not contains then return end

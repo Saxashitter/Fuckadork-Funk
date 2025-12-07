@@ -1,6 +1,6 @@
 local SongChart = Class:extend("SongChart")
 
-local chartPath = "assets/songs/%s/data/%s-%s.mc"
+local chartPath = "assets/songs/%s/data/%s/%s.json"
 local metaPath = "assets/songs/%s"
 local metaDataPath = "assets/songs/%s/metadata.json"
 
@@ -16,9 +16,12 @@ SongChart.metadata = {
 }
 SongChart.metadata.__index = SongChart.metadata
 
-function SongChart:constructor(name, mode)
+function SongChart:constructor(name, mode, difficulty)
 	if mode == nil then
 		mode = "funk"
+	end
+	if difficulty == nil then
+		difficulty = "normal"
 	end
 
 	if love.filesystem.getInfo(metaDataPath:format(name)) then
@@ -38,19 +41,7 @@ function SongChart:constructor(name, mode)
 	self.adaptiveVocals = self.metadata.adaptiveVocals
 	self.bpm = self.metadata.bpm
 	self.speed = self.metadata.speed
-	self.notes = {}
-
-	if love.filesystem.getInfo(chartPath:format(name, "left", mode)) then
-		self.notes[1] = MalodySongParser.parse(Json.decode(love.filesystem.read(chartPath:format(name, "left", mode))), self.bpm)
-	else
-		self.notes[1] = {{},{},{},{}}
-	end
-
-	if love.filesystem.getInfo(chartPath:format(name, "right", mode)) then
-		self.notes[2] = MalodySongParser.parse(Json.decode(love.filesystem.read(chartPath:format(name, "right", mode))), self.bpm)
-	else
-		self.notes[2] = {{},{},{},{}}
-	end
+	self.notes = PsychSongParser.parse(Json.decode(love.filesystem.read(chartPath:format(name, mode, difficulty))))
 end
 
 function SongChart:stepToTime(step)

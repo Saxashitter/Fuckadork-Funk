@@ -51,5 +51,7 @@ Engine.onWindowResize:connect(function(w, h)
 	g3d.camera.aspectRatio = 1280/720
 end)
 
-Console.init()
-print = Console.print
+if Engine.deviceType == "Mobile" then
+	Console.init()
+	print = Console.print
+end

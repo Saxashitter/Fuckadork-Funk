@@ -16,21 +16,24 @@ function PsychSongParser.parse(data)
 
 	parsed.notes = {}
 	for i = 1, 2 do
+		print("create player field "..i)
 		parsed.notes[i] = {}
 		for k = 1, 4 do
+			print("create note field "..k)
 			parsed.notes[i][k] = {}
 		end
 	end
 
-	for _,section in ipairs(data.notes or {}) do
-		for _,note in ipairs(section.sectionNotes) do
-			local absolutePos = math.floor(note[1] / stepCrotchet)
-			local offsetPos = (note[1] % stepCrotchet) / stepCrotchet
+	for num,section in ipairs(data.song.notes or {}) do
+		print("parse sector #"..num)
+		for num,note in ipairs(section.sectionNotes) do
+			print("parse note #"..num)
+			local absolutePos = note[1]
 			local side = 3 - (math.floor(note[2] / 4) + 1)
 			local field = (note[2] % 4)+1
-			local holdTime = note[3] / stepCrotchet
+			local holdTime = note[3]
 		
-			if holdTime < 1 then
+			if holdTime < stepCrotchet then
 				holdTime = 0
 			end
 
@@ -41,23 +44,17 @@ function PsychSongParser.parse(data)
 			local notes = parsed.notes[side]
 			local notefield = notes[field]
 
-			if #notefield < absolutePos then -- lets even things out
-				for k = #notefield+1, absolutePos-1 do
-					notefield[k] = notefield[k] or {valid = false}
-				end
-			end
-	
-			notefield[absolutePos] = {
+			print("this note is at field #"..field)
+			table.insert(notefield, {
 				valid = true,
-				step = absolutePos,
-				offset = offsetPos,
+				position = absolutePos,
 				holdTime = holdTime,
 				field = field
-			}
+			})
 		end
 	end
 
-	return parsed
+	return parsed.notes
 end
 
 function PsychSongParser.isPsych(data)

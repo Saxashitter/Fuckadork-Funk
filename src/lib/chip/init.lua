@@ -506,7 +506,7 @@ function Chip.init(settings)
 		end
 
     	shove.setResolution(gameWidth, gameHeight)
-		shove.setWindowMode(screenWidth, screenHeight, settings.shove or {})
+		shove.setWindowMode(math.min(screenWidth, gameWidth), math.min(screenHeight, gameHeight), settings.shove or {})
 
         Engine.debugMode = settings.debugMode
         if table.contains(args, "-debug") or table.contains(args, "--debug") then
