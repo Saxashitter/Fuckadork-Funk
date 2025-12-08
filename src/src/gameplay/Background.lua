@@ -79,6 +79,11 @@ function Background:loadBackground(folder)
 	self.leftSide = Point:new(meta.leftSide[1], meta.leftSide[2])
 	self.rightSide = Point:new(meta.rightSide[1], meta.rightSide[2])
 	self.speaker = Point:new(meta.speaker[1], meta.speaker[2])
+	self.light = {
+		x = meta.light[1],
+		y = meta.light[2],
+		strength = meta.light[3]
+	}
 
 	for _, data in ipairs(meta.sprites) do
 		--local data = setmetatable(data, self.spriteMetaData)

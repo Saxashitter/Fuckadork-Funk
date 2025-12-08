@@ -429,23 +429,36 @@ function Sprite:update(dt)
 end
 
 function Sprite:isOnScreen()
-	local camera = Camera.currentCamera
-	local zoom = camera and camera:getZoom() or 1
+    local camera = Camera.currentCamera
+    if not camera then return false end
 
+    local zoom = camera:getZoom() or 1
+
+    -- Sprite rect
     local rect = self._rect
     local rx, ry, rw, rh = rect.x, rect.y, rect.width, rect.height
 
-	local ox = -(Engine.gameWidth - (Engine.gameWidth*zoom))/2
-	local oy = -(Engine.gameHeight - (Engine.gameHeight*zoom))/2
+    -- Compute camera viewport in world coordinates
+    local halfW = (Engine.gameWidth  / zoom) / 2
+    local halfH = (Engine.gameHeight / zoom) / 2
 
-    ox = ox + camera:getX() - Engine.gameWidth/2
-    oy = oy + camera:getY() - Engine.gameHeight/2
+    local camX = camera:getX()
+    local camY = camera:getY()
 
-    return (
-        (rx + rw) > ox and rx < Engine.gameWidth-ox and
-        (ry + rh) > oy and ry < Engine.gameHeight-oy
+    local viewLeft   = camX - halfW
+    local viewRight  = camX + halfW
+    local viewTop    = camY - halfH
+    local viewBottom = camY + halfH
+
+    -- Rect vs viewport overlap
+    return not (
+        rx + rw < viewLeft or
+        rx > viewRight or
+        ry + rh < viewTop or
+        ry > viewBottom
     )
 end
+
 
 ---
 --- @param  axes  "x"|"y"|"xy"

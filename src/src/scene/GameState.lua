@@ -15,6 +15,14 @@ function GameState:constructor(...)
 
 	self.background = Background:new("test")
 
+	-- gameplay stuff
+
+	self.health = 1
+	self.healthDrain = 0.25-- set to 1 for instakill lololol
+	-- runs every frame
+
+	-- the actual visuals
+
 	self.left = Character:new("bf",
 		self.currentMode,
 		self.background.leftSide.x,
@@ -23,8 +31,13 @@ function GameState:constructor(...)
 		self.currentMode,
 		self.background.rightSide.x,
 		self.background.rightSide.y)
-	--self.left.flipX = not self.left.flipX
 	self.right.flipX = not self.right.flipX
+
+	-- lol shadows
+	self.light = Light:new(self.background.light.x, self.background.light.y, self.background.light.strength)
+
+	self.leftShadow = Shadow:new(self.left, self.light)
+	self.rightShadow = Shadow:new(self.right, self.light)
 
 	self.HUDcamera = Camera:new()
 
@@ -42,6 +55,7 @@ function GameState:constructor(...)
 
 	local function getNotesInSection(self, i)
 		local notes = 0
+		local tableThatContainsNotes = {}
 		local time = self.song:beatToTime(4)
 		local curTime = self.song:getTime()
 
@@ -52,10 +66,11 @@ function GameState:constructor(...)
 				end
 	
 				notes = notes + 1
+				table.insert(tableThatContainsNotes, note)
 			end
 		end
 	
-		return notes
+		return notes, tableThatContainsNotes
 	end
 
 	self.song:addSource(self.currentSong, "Inst")
@@ -83,11 +98,13 @@ function GameState:constructor(...)
 		local step = math.floor(self.song:getCurStep())
 
 		local leftNotes = getNotesInSection(self, 1)
-		local rightNotes = getNotesInSection(self, 2)
+		local rightNotes, rightNotesTable = getNotesInSection(self, 2)
 
 		local t = Tween:new()
 		-- TODO: make chart "editor" to make events and camera switches
 
+		self.healthDrain = math.min(rightNotes/8, (1/15)/(1/60)) -- should take like, 20 frames to kill the player lol (assuming game is running at 60 fps)
+		
 		if rightNotes > leftNotes then
 			t:tweenProperty(self.camera, "_x", self.right:getCamX(), 0.6, Ease.quintInOut)
 			t:tweenProperty(self.camera, "_y", self.right:getCamY(), 0.6, Ease.quintInOut)
@@ -143,10 +160,21 @@ function GameState:constructor(...)
 		+ self.playerField:getHeight()
 		+ Receptor.size*self.playerField:getScale())
 
+	local barWidth = 120
+	local barHeight = 20
+	
+	self.playerHealth = ProgressBar:new(Engine.gameWidth/2, Engine.gameHeight - barHeight - 4)
+	self.playerHealth._barWidth = barWidth
+	self.playerHealth._barHeight = barHeight
+	self.playerHealth._fillColor = Color.RED
+	self.playerHealth:setValue(self.health)
+	self.playerHealth.origin = Point:new(0.5, 0)
+
 	if Settings.get("Downscroll") then
 		self.judgementGroup:setY(self.playerField:getY()
 			- self.playerField:getHeight()
 			- Receptor.size*self.playerField:getScale() - 150)
+		self.playerHealth:setY(barHeight + 4)
 	end
 
 	self.playerField:setHitCallback(function(_, timing)
@@ -166,8 +194,24 @@ function GameState:constructor(...)
 			judgement:kill()
 		end)
 
+		self.health = math.min(1, self.health + 0.05)
 		self.curJudgement = judgement
 	end)
+
+	self.playerHealthText = Text:new(Engine.gameWidth/2, self.playerHealth:getY() - 1, 0, "THIS IS HEALTH DUMBASSSSS", barHeight / 2)
+	self.playerHealthText.origin = Point:new(0.5, 1)
+	self.playerHealthText:setBorderSize(1)
+end
+
+function GameState:update(dt)
+	if self.song:getTime() >= 0 then
+		self.health = math.max(0, self.health - self.healthDrain * dt)
+		self.playerHealth:setValue(self.health)
+	end
+
+	print(self.health)
+
+	GameState.super.update(self, dt)
 end
 
 function GameState:init(songName)
@@ -198,18 +242,19 @@ function GameState:init(songName)
 
 	self:add(self.background)
 	self.background:addObjects()
+	self:add(self.leftShadow)
 	self:add(self.left)
+	self:add(self.rightShadow)
 	self:add(self.right)
+
+	self:add(self.playerHealth, self.HUDcamera)
+	self:add(self.playerHealthText, self.HUDcamera)
 
 	self:add(self.strumlineBG, self.HUDcamera)
 	self:add(self.playerField, self.HUDcamera)
 	self:add(self.botField, self.HUDcamera)
 	self:add(self.judgementGroup, self.HUDcamera)
-
 	self.song:play()
-end
-
-function GameState:physics(dt)
 end
 
 function GameState:resize(width, height)

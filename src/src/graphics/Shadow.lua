@@ -8,8 +8,8 @@ function Shadow:constructor(char, light)
 	self.alpha = 0.4
 end
 
-function Shadow:getFrame()
-	return self.char:getFrame()
+function Shadow:isOnScreen()
+    return self.char:isOnScreen()
 end
 
 function Shadow:getRenderingInfo(trans)
@@ -162,11 +162,11 @@ function Shadow:draw()
 	local maxScale = 0.25     -- maximum y scale (when light is very low)
 
 	-- map dy into a 0–1 range and invert it
-	local t = dy / maxHeight
+	local t = (dy / maxHeight) * self.light.strength
 	local flattenFactor = maxScale - (maxScale - minScale) * t
 
 	-- slight horizontal skew depending on light offset
-	local skewAmount = dx * 0.0025
+	local skewAmount = (dx * 0.0025) * self.light.strength
 
 	self.origin = self.char.origin
 	self.flipX = self.char.flipX
