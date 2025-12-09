@@ -13,7 +13,7 @@ GameState.keyBinds = {"d", "f", "j", "k"}
 function GameState:constructor(...)
 	self.super.constructor(self, ...)
 
-	self.background = Background:new("test")
+	self.background = Background:new("test2")
 
 	-- gameplay stuff
 
@@ -243,9 +243,11 @@ function GameState:init(songName)
 	self:add(self.background)
 	self.background:addObjects()
 	self:add(self.leftShadow)
-	self:add(self.left)
 	self:add(self.rightShadow)
+	self.background:addObjects("backFrontObjects")
+	self:add(self.left)
 	self:add(self.right)
+	self.background:addObjects("frontObjects")
 
 	self:add(self.playerHealth, self.HUDcamera)
 	self:add(self.playerHealthText, self.HUDcamera)

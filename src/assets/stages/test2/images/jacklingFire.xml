@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TextureAtlas imagePath="jacklingFire.png">
+	<!-- Created with Adobe Animate version 19.2.0.405 -->
+	<!-- http://www.adobe.com/products/animate.html -->
+	<SubTexture name="jacklingFire0000" x="132" y="0" width="128" height="192" frameX="0" frameY="-8" frameWidth="134" frameHeight="203"/>
+	<SubTexture name="jacklingFire0001" x="0" y="398" width="132" height="193" frameX="-2" frameY="-10" frameWidth="134" frameHeight="203"/>
+	<SubTexture name="jacklingFire0002" x="128" y="591" width="126" height="193" frameX="-2" frameY="-6" frameWidth="134" frameHeight="203"/>
+	<SubTexture name="jacklingFire0003" x="0" y="198" width="128" height="200" frameX="0" frameY="0" frameWidth="134" frameHeight="203"/>
+	<SubTexture name="jacklingFire0004" x="0" y="0" width="132" height="198" frameX="-2" frameY="-5" frameWidth="134" frameHeight="203"/>
+	<SubTexture name="jacklingFire0005" x="0" y="783" width="126" height="191" frameX="-2" frameY="-8" frameWidth="134" frameHeight="203"/>
+	<SubTexture name="jacklingFire0006" x="0" y="591" width="128" height="192" frameX="0" frameY="-8" frameWidth="134" frameHeight="203"/>
+	<SubTexture name="jacklingFire0007" x="128" y="198" width="132" height="189" frameX="-2" frameY="-14" frameWidth="134" frameHeight="203"/>
+	<SubTexture name="jacklingFire0008" x="132" y="387" width="126" height="187" frameX="-2" frameY="-12" frameWidth="134" frameHeight="203"/>
+</TextureAtlas>

@@ -1,0 +1,76 @@
+{
+	"zoom": 0.8,
+	"rightSide": [300, 0],
+	"leftSide": [-300, 0],
+	"speaker": [0, 0],
+	"light": [0, 0, 0.5],
+	"shadows": false,
+	"sprites": [
+		{
+			"key": "sky",
+			"type": "image",
+			"image": "sky",
+			"position": [0, 0],
+			"scale": [1.5, 1.5],
+			"origin": [0.5,0.5],
+			"scrollFactor": [0.5, 0.25],
+			"rotation": 0
+		},
+		{
+			"key": "mountains1",
+			"type": "image",
+			"image": "mountains1",
+			"position": [0, -55],
+			"scale": [1.5, 1.5],
+			"origin": [0.5, 0.5],
+			"scrollFactor": [0.25, 0.25],
+			"rotation": 0
+		},
+		{
+			"key": "mountains3",
+			"type": "image",
+			"image": "mountains3",
+			"position": [0, -55],
+			"scale": [1.5, 1.5],
+			"origin": [0.5, 0.5],
+			"scrollFactor": [0.15, 0.25],
+			"rotation": 0
+		},
+		{
+			"key": "mountains2",
+			"type": "image",
+			"image": "mountains2",
+			"position": [0, -55],
+			"scale": [1.5, 1.5],
+			"origin": [0.5, 0.5],
+			"scrollFactor": [0.2, 0.25],
+			"rotation": 0
+		},
+		{
+			"key": "floor",
+			"type": "image",
+			"image": "floor",
+			"position": [0, -550],
+			"scale": [1.85, 1.85],
+			"origin": [0.5, 0],
+			"scrollFactor": [1, 1],
+			"rotation": 0
+		},
+		{
+			"key": "jacklingFire",
+			"type": "image",
+			"image": "jacklingFire",
+			"position": [500, -20],
+			"scale": [1.5, 1.5],
+			"origin": [0.5, 1],
+			"scrollFactor": [1, 1],
+			"aboveShadows": true,
+			"rotation": 0,
+			"animation": {
+				"prefix": "jacklingFire",
+				"fps": 24,
+				"loop": true
+			}
+		}
+	]
+}
