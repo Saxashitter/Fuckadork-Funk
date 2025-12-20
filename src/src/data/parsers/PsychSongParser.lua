@@ -24,9 +24,9 @@ function PsychSongParser.parse(data)
 		end
 	end
 
-	for num,section in ipairs(data.notes or {}) do
+	for num,section in ipairs(data.song.notes or {}) do --idk why u changed it from data.song.notes
+		for num,note in ipairs(section.sectionNotes) do --to data.notes but it pretty much broke everything so i changed it back.
 		print("parse sector #"..num)
-		for num,note in ipairs(section.sectionNotes) do
 			print("parse note #"..num)
 			local absolutePos = note[1]
 			local side = 3 - (math.floor(note[2] / 4) + 1)
