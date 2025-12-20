@@ -24,7 +24,7 @@ function PsychSongParser.parse(data)
 		end
 	end
 
-	for num,section in ipairs(data.song.notes or {}) do
+	for num,section in ipairs(data.notes or {}) do
 		print("parse sector #"..num)
 		for num,note in ipairs(section.sectionNotes) do
 			print("parse note #"..num)
