@@ -19,6 +19,7 @@ function GameState:constructor(...)
 
 	self.health = 1
 	self.healthDrain = 0.25-- set to 1 for instakill lololol
+	self.tmr = 0
 	-- runs every frame
 
 	-- the actual visuals
@@ -75,8 +76,15 @@ function GameState:constructor(...)
 
 	self.song:addSource(self.currentSong, "Inst")
 	if self.chart.vocals then
-		self.song:addSource(self.currentSong, "funkin/Voices")
-	end
+		if self.chart.splitvocals then
+			self.song:addSource(self.currentSong, "funkin/Voices-Player")
+			self.song:addSource(self.currentSong, "funkin/Voices-Opponent")
+			print("split vocals Loaded!")
+		else
+			self.song:addSource(self.currentSong, "funkin/Voices")
+			print("normal vocals Loaded!")
+		end
+	else print("no vocals") end -- this took way longer than it should have
 
 	self.song:setBPM(self.chart.bpm)
 	self.song:setFinishCallback(function()
@@ -91,6 +99,11 @@ function GameState:constructor(...)
 		end
 		if self.left.animation:getCurrentAnimation().name == "idle" then
 			self.left:play("idle")
+		end
+		local t = Tween:new()
+		if beat % 4 > 2 then
+			self.camera:setZoom(self.background.zoom + 0.03)--couldve done this better but im too lazy
+			t:tweenProperty(self.camera, "_zoom", 0.65, 1, Ease.quintOut)
 		end
 	end)
 
@@ -148,7 +161,7 @@ function GameState:constructor(...)
 
 	self.strumlineBG = Sprite:new() --couldnt figure this out today, sax if u wanna you can try and do it urself
 	-- penny sucks at coding.wav
-	-- i dont blame you at all tbh LOL
+	-- i dont blame you at all tbh LOL // I HATE YOU
 	self.strumlineBG:setX(self.playerField:getX() - strumBGOffset)
 	self.strumlineBG:makeSolid(self.playerField:getWidth() + strumBGOffset*2, Engine.gameHeight, Color.BLACK) -- set the alpha based off of the settings lua valuo for it
 	self.strumlineBG:setAlpha(Settings.get("Strumline Background") / 100)
@@ -204,12 +217,14 @@ function GameState:constructor(...)
 end
 
 function GameState:update(dt)
+	self.tmr = self.tmr + dt
 	if self.song:getTime() >= 0 then
 		self.health = math.max(0, self.health - self.healthDrain * dt)
 		self.playerHealth:setValue(self.health)
+		--self.camera:setX(love.mouse.getX()-500)
+		--self.camera:setY(love.mouse.getY()-500) --i was testing the paralax stuff
 	end
-
-	print(self.health)
+	--print(self.health)
 
 	GameState.super.update(self, dt)
 end

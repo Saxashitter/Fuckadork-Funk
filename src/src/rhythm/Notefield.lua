@@ -17,7 +17,7 @@ function Notefield:constructor(x, y, meta, song, chart, bot)
 	self._y = y or 0
 	self._width = 0
 	self._height = 0
-	self._scale = 1
+	self._scale = 0
 	self._bot = bot or false
 
 	self._meta = meta

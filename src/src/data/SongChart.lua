@@ -38,6 +38,7 @@ function SongChart:constructor(name, mode, difficulty)
 	self.leftSide = self.metadata.leftSide
 	self.speaker = self.metadata.speaker
 	self.vocals = self.metadata.vocals
+	self.splitvocals = self.metadata.splitvocals -- i love guessing what to do and seeing if it did anything
 	self.adaptiveVocals = self.metadata.adaptiveVocals
 	self.bpm = self.metadata.bpm
 	self.speed = self.metadata.speed
